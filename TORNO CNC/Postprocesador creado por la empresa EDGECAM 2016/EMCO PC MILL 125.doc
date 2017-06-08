@@ -1,0 +1,3069 @@
+*** Start of include file CWT Notes Mill ISO.cgi ***
+*			*************************
+*			*	ISO Template Note	*
+*			*************************
+*** End of include file A:\Pams\cam\machdef\template\CWT Notes Mill ISO.cgi ***
+*** Start of include file CWT Notes Mill General.cgi ***
+* Within Code Generator the use of macro numbers is restricted as follows:
+*    1 - 3999 Reserved for cam system Use
+* 4000 - 4999 Reserved for Code Wizard Template use
+* 5000 - 5999 Reserved for PDI customisation
+* 6000 - 9999 Reserved for user defined customisation
+*
+* Customisation of Code Generator files, both direct and
+* through CGEs must be limited to  the 6000-9999 range
+*
+* UARRAY1 is used within the template logic
+*   Array pointers above 1000 are used in subroutine control
+*   Array pointers above 2000 are used for datum setting
+*   Use in customisation should be restricted to pointers below 999
+*
+*
+*			*******************************
+*			* General template Notes Area *
+*			*******************************
+* Notes must be defined outside of all procedures using the following syntax
+* Text is displayed in the machine NOTES area of the CGD but does not show in CG source
+**************************************************************************
+*   Machine independant Code Generator include file
+*   Filename:	CG Technical notes.cgi.cgi
+*	Author:		RHA
+*   Date:       16 February 2011
+**************************************************************************
+*   Change History - At end of file
+* Version 2011.2
+*          FIRST ISSUE
+* 16/02/11 RHA W42941 Document user macro ranges
+*
+**************************************************************************
+*** End of include file A:\Pams\cam\machdef\template\CWT Notes Mill General.cgi ***
+*** Start of include file mill-initialise.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-initialise.cgi
+*	Author:		RHA
+*   Date:       11 November 2005
+*
+* New file for adaptive milling templates derived from earlier multiplane template                                *
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 20/02/06 RHA DEV00016344 Implement IJK vector for 5 axis cycle
+* 27/02/06 RHA DEV00016236 Spindle control fixes
+* 10/03/06 RHA DEV00016621 Add TNC movement code token
+* 16/03/06 RHA DEV00016660 Change to IF tokens for TNC Datum Shifting
+* Version 10.75
+* 11/05/06 RHA DEV00017093 Variables in user tokens USER11 onwards
+* 16/05/06 RHA DEV00017213 Correct index handling for no rotation cases
+* Version 11.0
+* 01/08/06 RHA DEV00017818 Hole cycle clearance and level options IF token
+* 01/08/06 RHA DEV00017490 Make spindle start warning optional
+* 04/08/06 RHA DEV00017771 Number of turns token for ISO
+* Version 11.5
+* 20/09/06 RHA DEV00017909 Expand trace options
+* 26/10/06 RHA DEV00018471 HPCC improvements
+* 24/11/06 RHA DEV00017338 Move CPLNAME to a template variable
+* 08/01/07 RHA DEV00018930 Make ZSAFE value available as a token for hole cycles
+* Version 11.75
+* 30/04/07 RHA DEV00019883 Tokens etc for Euler angles in Index output
+* 14/05/07 RHA DEV00019985 Tokens for XINC etc., improve XABSORIGIN Description
+* 21/05/07 RHA DEV00020096 Implement Maintain Index Option at ToolChange
+* 24/05/07 RHA DEV00019981 Orthogonal plane cycle controls
+* Version 12.00
+* 10/08/07 RHA DEV00020285 Add new ISO Datum Shift Tokens
+* 25/09/07 RHA DEV00021119 Add setvars and tokens for pivot mode control
+* 27/09/07 RHA DEV00021119 Give pivot code its own format entry
+* Version 12.25
+* 18/10/07 RHA DEV00021382 Correct use of #TMP - #COMPTEMP
+* 04/12/07 RHA DEV00021534 Enable longhand tapping
+* Version 12.50
+* 17/01/08 RHA DEV00022021 Incremental option for Z Clear
+* 18/01/08 RHA DEV00021841, DEV00021908 New optional warnings
+* 22/01/08 RHA DEV00022142 Clearance options applied to all clearance tokens
+* 19/03/08 RHA DEV00022891 Allow concecutive coincident indexes to CPL
+* Version 2009.1
+* 14/04/08 RHA DEV00018979 Correct BNUM reset
+* 07/07/08 RHA DEV00023548 Implement NC Code Suppression
+* 06/08/08 RHA DEV00024310 Back bore and face in milling
+* 06/08/08 RHA DEV00023786 Add tool group and ID tokens
+* 11/08/08 RHA DEV00024364 Implement helical hole cycles
+* 21/08/08 RHA DEV00024504 Probing tokens for ISO machines
+* 28/08/08 RHA DEV00023797 Add tool token and remove chamfer angle restriction
+* 10/09/08 RHA DEV00024504 Probe token corrections
+* 24/09/08 RHA DEV00024855 Correct spindle direction in back bore longhand
+* 07/10/08 RHA DEV00025129 Longhand back bore cutting in M5 spindle stop mode
+* Version 2009.2
+* 24/10/08 RHA DEV00025000 Allow Rapid after tool change with null move
+* 05/11/08 RHA DEV00024851 Cycle DEf 204 for TNC
+* 05/11/08 RHA DEV00023525 Fix CYCL DEF numbers and descriptions as tokens
+* 07/11/08 RHA DEV00025098 Make tool angle available in setup & core tool change
+* 12/11/08 RHA DEV00024851 CYCLE DEF 204 fixes
+* 14/11/08 RHA DEV00024851 Counter bore depth token corrections
+* 21/11/08 RHA DEV00025098 Use new system variable for Included tool angle
+* 07/01/09 RHA DEV00025831 Add token for holdertype
+* 09/01/09 RHA DEV00024568 Make Tool Unit available in toolchange. Set variable on token
+* 06/03/09 RHA DEV00026198 Use Job data instead of ASK questions
+* Version 2010.1
+* 05/06/09 RHA WI32294 Create Siemens adaptive mill template
+* 05/06/09 RHA WI32294 Siemens datum set tokens
+* 16/06/09 RHA WI32294 Siemens Subroutine End tokens and Cycle return feed factor
+* 18/06/09 RHA WI31681 Siemens Thread Mill tokens
+* 19/06/09 RHA WI31681 Siemens Angle tokens for toolchange and index
+* 22/06/09 RHA WI31681 Tokens and variables for Siemens Hermle variant
+* 25/06/09 RHA WI34681 Correction to Home and ToolChange tokens
+* 07/07/09 RHA WI32294 Initial feedback from GST
+* 09/07/09 RHA WI34873 New Thread Mill - Add new code options
+* 15/07/09 RHA WI34873 Fix Thread Mill Cycle Level
+* 27/07/09 RHA WI31681 Tokens and logic for thread ID & OD settings
+* 05/08/09 RHA WI35305 Add Probing mode control tokens etc
+* 06/08/09 RHA WI35307 Add code con and option for manual toolchange
+* 19/08/09 RHA W35537 Add Lead and Starts tokens for thread mill
+* 20/08/09 RHA W35450 Add tokens for coordinate rotation to sub call
+* 09/09/09 RHA W35307 Manual toolchange and tokens for angled head
+* 15/09/09 RHA W35307 Set values for tool angle (angled head) tokens etc
+* 17/09/09 RHA W35307 System variables renamed HEADANGLE MOUNTANGLE
+* 23/09/09 RHA W35563 Thread mill bottom to top formatting & suppress points call
+* Version 2010.2
+* 13/11/09 RHA W36665 Correct action of planar rotate on rotary angles
+* 11/12/09 RHA W36903 Add "Ask Once" to the NC Stlyes > Interactive Startup options
+* 04/01/10 RHA W37181 Templates Mill TNC - add token for Q355 (threads per step)
+* 04/01/10 RHA W32567 Implement G28 Moves to Home etc. ISO Template
+* 15/01/10 RHA W37297 Add Single Shot option for Exact Stop
+* 25/01/10 RHA W37441 Hole locations for angled head - direction token
+* 26/01/10 RHA W37441 Make new hole depth variable modal
+* 13/04/10 RHA W38640 Hole parameters adjusted for TLO and Angled Head
+* Version 2011.1
+* 02/07/10 RHA W38284 Add Reset_Spindle token to toolchange
+* 13/07/10 RHA W39785 Implement tap type setting at toolchange
+* 24/08/10 RHA W39967 THISZMOVE Token for Siemens Rapid after TC
+* Version 2011.2
+* 25/10/10 RHA W32074 Restructure Datum Shift and Index handling, #XTSUB etc.
+* 28/10/10 RHA W32074 Fix #XSHIFT etc. remove redundant variables
+* 28/10/10 RHA W37422 Siemens datum shift tokens
+* 29/10/10 RHA W38135 Alternative incremental datum base for TNC
+* 15/12/10 RHA W38043 Feed mode code for TNC
+* 16/12/10 RHA W41997 Implement peck tapping
+* 11/01/11 RHA W42393 New Option - Control for negative radius when angle>180
+* 28/01/11 RHA W42399 Add tapping type code for Siemens
+* 24/02/11 RHA W42352 Separate clamping for secondary rotary axis
+* 28/02/11 RHA W43151 Tapping reverse with combined coolant codes
+* 29/03/11 RHA W31156 Correct undefined variable fault on 3 axis
+* Version 2012.1
+* 06/06/11 RHA W43692 Fix direction setting, backbore with spindle blocks
+* 06/07/11 RHA W44708 Add Thread Mill tokens
+* 21/06/11 RHA W42241 Selective threadmill canned cycles
+* 18/08/11 RHA W45704 TNC Allow use of Modify Cycle for  tapping and thread mill
+* 21/12/11 RHA W47111 Force GCode after Dwell
+* Version 2012.2
+* 17/01/12 RHA W45710 Force Index token on first toolchange
+* 31/01/12 RHA W47500 Implement auxiliary Z axes
+* 14/03/12 RHA W49403 Implement Quill Retract function
+* 14/03/12 RHA W49476 Call QUILL_BLOCK only when needed
+* 15/03/12 RHA W49072 add QUILLZDEPTH token for drilling code constructors
+* 20/03/12 RHA W49476 Call AUXZ_BLOCK only when needed
+* 20/03/12 RHA W49072 More Quill tokens for drilling code constructors
+* 27/03/12 RHA W49627 Quills - add clamp / unclamp codes
+* Version 2013.1
+* 31/05/12 RHA W48878 Phantom warnings from Subroutines, #MASKKEEP
+* 30/08/12 RHA W43286 Support peck tapping via cycle point calls
+* Version 2013.2
+* 14/03/13 GST W39645 Add options to handle retract for bottom-up canned thread
+* 15/03/13 GST W52689 Fix THISZMOVE output for canned holes
+* 20/03/13 GST W31039 Implement new coolant system - fase 1
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation
+* 20/03/12 GST W54195 Create tokens for NEXT tool parameters
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation - second batch
+* 21/03/13 GST W54191 Force feed for tapping - floating and rigid choice
+* 27/03/13 GST W55128 Implement Rotary Axial interpolation - fourth batch
+* 10/04/13 GST W56644 Fix spindle stopped warnings
+* 23/04/13 GST W57296 Move to Toolchange Home in rotary axial
+* 21/05/13 GST W56952 Add Dwell Time to allow spindle to change speed
+* Version 2014.1
+* 18/07/13 GST W58113 Force rotary update after IJK_5-axis
+* 22/07/13 GST W55730 Implement rotary precision
+* 23/07/13 GST W58567 Fix rotary direction calculation for rationalised angles
+* 23/07/13 GST W43623 BackBore/Face cycle points option
+* 07/08/13 GST W49799 Allow output of datum override in Set Work Datums
+* 07/08/13 GST W52636 Fix Z output after ZINITIAL
+* 16/08/13 GST W59433 Add support for 3D compensation
+* 03/09/13 GST W59852 Add support for Dynamic Offset
+* 19/09/13 GST W60303 Create Move Code for 3D_CRC on TNC
+* 14/10/13 GST W60594 Allow CRC off on rapid retracts
+* Version 2014.2
+* 11/02/14 GST W63124 Improve array output for debug trace
+* 24/02/14 GST W62726 Implement Turning on milling
+* 06/03/14 GST W62726 Various corrections and new tokens
+* 11/03/14 GST W63762 Add macro breakout
+* 11/03/14 GST W62726 Create Cancel-CSS token
+* Version 2015.1
+* 07/07/14 GST W61121 Implement Maximum Linear Separation
+* 18/07/14 GST W64177 Use system angular direction when available
+* 30/07/14 GST W32318 Implement -+360 angular range
+* 04/08/14 GST W65629 Fix direction assignment
+* 05/08/14 GST W64177 New codes for angular direction
+* 08/08/14 GST W62726 Index token for Turn RAT
+* 20/08/14 GST W65032 Fix RAT to respect clearance - exclude null move
+* 03/09/14 GST W67146 Assign correct modes at MtTc
+* Version 2015.2
+* 07/01/15 GST W80110 Implement M&H Probing
+* 09/01/15 GST W79526 Add TNC support for ToM
+* 21/01/15 GST W80110 Separate M&H & Renishaw at tokens/formats levels
+* 05/02/15 GST W80347 Implement support for Simultaneous indexing
+* 10/02/15 GST W81600 Implement Program Stop on Move to Home/TC
+* 10/02/15 GST W32377 Printing function for Renishaw
+* Version 2016.1
+* 18/06/15 GST ECAM-1158 Fix lift move on rotary axial holes
+* 23/06/15 GST ECAM-1548 Implement Probing NC-Gage
+* 06/07/15 GST ECAM-113 Implement MTM Siemens
+* 28/07/15 GST ECAM-2343 Implement Angle at Toolchange
+*
+*******************************************************
+*
+***************************************************************************
+***************************************************************************
+*   SPLINE OUTPUT
+*
+* For Polynomial Interpolation  End points EX,EY,EZ  Coeffs AX,BX etc
+***************************************************************************
+*
+* 3D Compensation output
+*
+*   NC Output control for PCIs (ECS2700)
+*	Block Numbering
+*	G (preparatory) codes
+*		Circular Interpolation
+*	Spindle / Gears
+*	General Coordinate Systems
+*	Rapid Traverse
+*	Hole Cycles
+*	Toolchange / Tooling
+*	Subroutines
+*	Cutter Radius Compensation
+*
+*	Datum Shifting
+*
+* #RECORD
+*	Multi-plane / Rotary
+*	M-FUNCTIONS
+*Thread Mill
+* Variables for Thread Mill canned cycle
+*
+*Extra Variables for TNC
+************ Check useage and remove if not required
+*User variables for
+*
+*	Constants for start of G function in DATA1 & M function in DATA2 statements
+*
+*
+*
+*
+*	*********************************
+*	Tokens - Use in Code Constructor
+*	*********************************
+*
+*
+*	G-Codes
+*	M Codes
+*	General
+* 3D compensation
+*	Toolchange / Tooling
+* If orientation tokens
+* Angled Head
+* Rapid to Home or ToolChange
+* G28 format for ISO
+*	Cutter Radius Compensation
+*	Circular Interpolation
+*	Hole Cycles
+* Added for Sinumerik840 & Fadal cycles
+*	Datum Shift : Translate / Index
+* Origin shift for TNC
+*
+* Datum shift for ISO
+* Datum Tokens For Siemens
+*	Tooling Sheet / Program Information
+*	Subroutines
+*	By block number
+*	Position : Before, after, in-line with main NC Program
+*	Datums
+*	Rotary Axes / Milling
+* Token^TOOL-ANGLE-1^[#TOOLR1=!FT_PRIMARY2]^Tool Angle - First Axis
+* Token^TOOL-ANGLE-2^[#TOOLR2=!FT_SECONDARY2]^Tool Angle - Second Axis
+* 5 Axis IKJ
+* Pivot options
+*   Spline Output
+*   Fanuc specific
+*   Heidenhain specific
+* Also in Siemens
+* Siemens Polynomial
+* Tokens for Polynomials - Trailng brackets
+* Tap cycle tokens for different addresses
+* Thread Mill Canned Cycle
+* Added for Siemens
+* For Heidenhain
+***********************************************************
+* Job Record Tokens
+***********************************************************
+***********************************************************
+* User tokens for
+***********************************************************
+*	Heidenhain TNC Only
+* modal lines in Drill Cycle Modify
+* Euler angles for Workplane
+* Tokens for back bore cycles
+* Tokens for Helical cycles
+* Tokens for tool group and ID
+* Tokens for Renishaw Probing
+* One token for depth  #BOREBOSSZDEPTH #WEBPOCKETZDEPTH #4THAXISZDEPTH
+* Tokens for M&H Probing
+***********************************************************
+*	Auxilliary axis
+***********************************************************
+***********************************************************
+*	M-Functions (Used to create default Code Constructor)
+***********************************************************
+*** End of include file A:\Pams\cam\machdef\template\mill-initialise.cgi ***
+*** Start of include file mill-iso-mach-mm.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-iso-mach-mm.cgi
+*	Author:		RHA
+*   Date:       11 November 2005
+*
+* New file for adaptive milling templates derived from earlier multiplane template                                *
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 16/12/05 RHA DEV00015566 Spline output enabled
+* 20/02/06 RHA DEV00016344 New MM line switch for 5 axis IJK
+* 02/03/06 RHA DEV00016506 Change default Home and Tool Change locations
+* 07/03/06 RHA DEV00015555 High Speed mode tolerance
+* Version 11.0
+* 18/07/06 RHA DEV00017692 Tidy Code Generator options in hole macros
+* 28/07/06 RHA DEV00017797 New MM and MT line switches
+* 07/08/06 RHA DEV00012241 Add High speed and coolant controls to Tool Change*
+* 08/08/06 RHA DEV00017341 Correct Tool Length Offset setting
+* 13/09/06 RHA DEV00018145 Correct High Speed Mode Q var macro setting
+* Version 12.00
+* 03/04/07 RHA DEV00020278 Allow Macro15 access to USERVAR2
+* Version 12.50
+* 06/02/08 RHA DEV00022190 Set default helical interpolation
+* 19/03/08 RHA DEV00022891 Allow concecutive coincident indexes to CPL
+* Version 2009
+* 06/08/08 RHA DEV00024310 Back Bore Cycles Q205
+* 13/08/08 RHA DEV00024364 Helical Hole Cycles Q205
+* Version 2009.2
+* 19/12/08 RHA DEV00025797 Comment new MT fields
+* Version 2010.1
+* 18/06/09 RHA WI34606 Set SPLINE_OUTPUT for Siemens. Add comment to MM details for all adaptive mill
+* 25/09/09 RHA W36130 Set CRC factor to 1.1
+* Version 2010.2
+* 06/04/10 RHA W38513 Default output to machine coords for 3ax mills
+* Version 2011.1
+* 04/06/10 RHA W39410 Document MM line switches 42 43
+* Version 2011.2
+* 16/11/10 RHA W41684 Document MM line switches
+* Version 2012.1
+* 31/08/11 RHA W45992 Make Max Rapid and High Feed the same value
+* Version 2013.2
+* 27/11/12 RHA W31861 Assess CGX for milling
+* Version 2013.2
+* 20/03/13 GST W56520 Add and document new MM line switches 42 43 44 45 46
+* 03/04/13 GST W56667 Add and document new MM line switch 47
+* Version 2015.1
+* 09/07/14 GST W61121 Implement Maximum Linear Separation
+* Version 2015.2
+* 10/02/15 GST W81600 Implement Program Stop on Move to Home/TC
+* 02/04/15 GST W82709 Update Documentation
+*
+**************************************************************************
+**********************************************
+* Setting up spindle defaults
+**********************************************
+* Code Generator Options
+* Tapping Modifiers
+* Longhand^No^Yes
+* CRC Register
+* Work Datum Override
+* Tap Cycle Type^Floating^Rigid
+* Tap CycleTap Cycle^Right Hand^Left Hand
+*Chord    Enter chord length for arc splitting
+*Full Canned Cycle
+* High speed tolerance
+* High Speed Mode^Off^On
+* Coolant^Off^Flood^Mist
+* Tool Length Offset
+* Maximum Linear Separation
+* Maximum Linear Separation
+* Program stop options
+*
+******************************************************************************************************
+*	Gcodes                                            20                            30             35             40              45
+*	Mcodes
+*
+*** End of include file A:\Pams\cam\machdef\template\mill-iso-mach-mm.cgi ***
+** ISO uses a unique kt due to the Probing kt flags
+*** Start of include file mill-iso-kt.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-default-kt.cgi
+*	Author:		RHA
+*   Date:       11 November 2005
+*
+* New file for adaptive milling templates
+*
+* ISO uses exclusive KT file due to Probing flags
+*
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 13/03/06 RHA DEV00016683 Alter horizontal machine width
+* Version 11.75
+* 23/04/07 RHA             Change gantry default size
+* Version 2012.2
+* 06/02/12 RHA W47500 Implement auxiliary Z axes
+* Version 2015.2
+* 07/01/15 GST W80110 Implement M&H Probing
+**************************************************************************
+* Base=Height, Width, Length, Thickness
+* Mount=Length,Width,Height   would be used in case of trunnion table
+*lower mount would be used as the default mount
+*side mount is for machines with a vertical mount
+*saddle mount is for machines with a saddle
+* Table=Length, Width, Height, Lead, Angle, Radius
+* the line below is used for table in case of horizontal machines with B primary axis
+* Head=Type,Length, Width, Height,Lead, Angle,Protrusion Length,Protrusion Width,Protrusion Ht,SpindleLocation
+* Head=Type,Length, Width, Height,Protrusion Length,Protrusion Width,Protrusion Ht
+* KTTILTTABLE Length, Width, Height, Lead, Angle, Radius
+* cylinder KTROTUNIT Length, Radius
+* KTSADDLE Length, Radius,thickness,width,height
+* KT Chuck Type, Length,Diameter,Bore,JawLength,JawHeight,JawWidth,Protrusion,NoJaws,NoSteps
+*KT ATC - Length Width Depth Lead Angle Diameter Protrusion
+* Auxiliary Z axes
+* Probing flags
+*
+*** End of include file A:\Pams\cam\machdef\template\mill-iso-kt.cgi ***
+*** Start of include file mill-iso.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-iso.cgi
+*	Author:		RHA
+*   Date:       11 November 2005
+*
+* New file for adaptive milling templates derived from earlier multiplane template
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 16/12/05 RHA DEV00015647 Add R in XY Only Option
+* 31/01/06 RHA DEV00012212 Align code constructor trace text
+* 06/02/06 RHA DEV00007742 Single helix option for Thread Mill
+* 10/02/06 RHA DEV00016236 Spindle control fixes
+* 14/02/06 RHA DEV00016311 Change index defaults
+* 15/02/06 RHA DEV00016297 Incremental datum shift
+* 20/02/06 RHA DEV00016344 Implement IJK vector for 5 axis cycle
+* 24/02/06 RHA DEV00016420 Dwell token in peck drill codecon
+* 27/02/06 RHA DEV00016236 Spindle control fixes
+* 28/02/06 RHA DEV00016369 Fix Convert rapid to feed
+* 01/03/06 RHA DEV00016487 Set modality of inex direction M code
+* 02/03/06 RHA DEV00016511 G54 default format to be 2.2
+* 07/03/06 RHA DEV00015555 High Speed mode tolerance, Reposition ZMOVE in Rapid codecon
+* 07/03/06 RHA DEV00014230 Rotation axes range correction
+* 14/03/06 RHA DEV00016367 Spindle control - add spindir to rapid codecon
+* 15/03/06 RHA DEV00015533 Add format table entries for toolstore tokens
+* 15/03/06 RHA DEV00015655 Add GEARMCODE token to hole cycles
+* 21/03/06 RHA DEV00007321 Correct Datum setting - limits
+* Version 10.75
+* 12/04/06 RHA DEV00010822 Designate logical tokens by colour
+* 12/04/06 RHA DEV00016781 Document use of UARRAY1 in template
+* 12/04/06 RHA DEV00016809 Colour code tokens
+* 20/04/06 RHA DEV00016925 Add PLANEGCODE to Rapid After ToolChange
+* 22/05/06 RHA DEV00017232 Add FEEDMODEGCODE for Inverse Time Feeds
+* Version 11.0
+* 25/07/06 RHA DEV00016799 Remove force output in Rapid After ToolChange
+* 26/07/06 RHA DEV00017767 Correct g98g99 terminology - all amachines
+* 01/08/06 RHA DEV00017818 Hole cycle clearance and level options
+* 01/08/06 RHA DEV00017490 Make spindle start warning optional
+* 03/08/06 RHA DEV00017814 Add WORKGCODE token to Rapid Home & Rapid TC
+* 04/08/06 RHA DEV00017771 Number of turns token for ISO
+* 24/08/06 RHA DEV00017771 Suppress P0 in helix
+* Version 11.5
+* 20/09/06 RHA DEV00017909 Expand trace options
+* 26/10/06 RHA DEV00018471 HPCC improvements
+* 03/11/06 RHA DEV00018471 ToolChange HPCC call should only be via a token
+* 21/12/06 RHA DEV00018873 Call 5 axis off at end if still active
+* 04/01/07 RHA DEV00018873 5 Axis cancel, correct for 3 axis machines
+* 08/01/07 RHA DEV00018930 Make ZSAFE value available as a token for hole cycles
+* 07/02/07 RHA DEV00018471 Correct Highspeed output in CORE TC
+* 07/02/07 RHA DEV00018873 try again
+* Version 11.75
+* 30/04/07 RHA DEV00019883 Tokens etc for Euler angles in Index output
+* 14/05/07 RHA DEV00019985 Tokens for XINC etc.
+* 24/05/07 RHA DEV00019981 Orthogonal plane cycle controls
+* 29/05/07 RHA DEV00019981 Force longhand holes in mc coords
+* Version 12.00
+* 09/08/07 RHA DEV00020648 Implement pitch suppression in ISO mill
+* 10/08/07 RHA DEV00020285 Add new ISO Datum Shift Tokens
+* 25/09/07 RHA DEV00021119 Add setvars and tokens for pivot mode control
+* 27/09/07 RHA DEV00021119 Give pivot code its own format entry
+* Version 12.25
+* 03/12/07 RHA DEV00021534 Enable longhand tapping
+* Version 12.50
+* 17/01/08 RHA DEV00022021 Incremental option for Z Clear
+* 04/02/08 RHA DEV00016982 Make tool user tokens available in tool set up
+* 18/02/08 RHA DEV00022063 Fix single helix and tidy call structure
+* Version 2009.1
+* 14/04/08 RHA DEV00023113 Feed after ToolChange code constructor added
+* 08/05/08 RHA DEV00020490 Add new hole depth option. Incremental from Retract
+* 06/08/08 RHA DEV00024310 Back bore and face in milling
+* 06/08/08 RHA DEV00023786 Add tool group and ID tokens
+* 07/08/08 RHA DEV00023786 Format table entries for Tooling tokens
+* 11/08/08 RHA DEV00024364 Implement helical hole cycles
+* 20/08/08 RHA DEV00024474 Add Feed Type setting to toolchange
+* 26/08/08 GST DEV00022751 Thread mill depth in canned cycle, RHA-added set variables
+* 26/08/08 RHA DEV00021410 Thread mill token values
+* 28/08/08 RHA DEV00023797 Add tool token and remove chamfer angle restriction
+* 11/09/08 RHA DEV00024662 Fix ASIN error in thread mill canned cycle
+* 11/09/08 RHA DEV00024504 Probing format table
+* 16/09/08 RHA DEV00024824 Format helical tokens with decimal part
+* 16/09/08 RHA DEV00024845 Remove duplicate token from back bore
+* 24/09/08 RHA DEV00024504 Format table changes requested
+* 24/09/08 RHA DEV00024855 Correct spindle direction in back bore longhand
+* 01/10/08 RHA DEV00024310 Add format Table entries for back bore
+* Version 2009.2
+* 24/10/08 RHA DEV00025000 Allow Rapid after tool change with null move
+* 07/11/08 RHA DEV00025098 Make tool angle available in setup & core tool change
+* 14/11/08 RHA DEV00024851 Counter bore depth token corrections
+* 07/01/09 RHA DEV00025831 Add token for holdertype
+* 09/01/09 RHA DEV00024568 Make Tool Unit available in toolchange. Set variable on token
+* 06/03/09 RHA DEV00026198 Use Job data instead of ASK questions
+* 17/03/09 RHA DEV00026452 Changes for 3D Z with TLO application
+* Version 2010.1
+* 25/06/09 RHA WI34681 Correction to Home and ToolChange tokens
+* 08/07/09 RHA WI34873 New Thread Mill - Restructure existing canned cycle
+* 09/07/09 RHA WI34873 New Thread Mill - Add new code options
+* 15/07/09 RHA WI34964 5 Axis IJK vectors should have format default 1.6
+* 20/07/09 RHA WI34873 Fix Internal/External codes
+* 22/07/09 RHA WI34873 Add Thread Mill token format refs
+* 23/07/09 RHA WI34873 Clarify option for Threaded Depth Sign
+* 23/07/09 RHA WI35139 Remove duplicate variable declarations
+* 29/07/09 RHA WI34873 Add signed absolute option for depth
+* 05/08/09 RHA WI35305 Add Probing mode control tokens etc
+* 05/08/09 RHA WI34754 Make call to Feed Type code constructor optional in toolchange
+* 06/08/09 RHA WI35307 Add code con and option for manual toolchange, tidy safe block
+* 07/08/09 RHA WI34873 Fix Format entry for T-MILL-MODE
+* 19/08/09 RHA W35537 Add Lead and Starts tokens for thread mill
+* 20/08/09 RHA W35450 Add tokens for coordinate rotation to sub call
+* 25/08/09 RHA W35537 Add TEXT for Starts in old cycle
+* 09/09/09 RHA W35307 Manual toolchange and tokens for angled head
+* 15/09/09 RHA W35307 Set values for tool angle (angled head) tokens etc
+* 17/09/09 RHA W35307 System variables renamed HEADANGLE MOUNTANGLE
+* 17/09/09 RHA W35307 Improve token availability
+* Version 2010.1 SP1
+* 13/10/09 RHA W36119 Remove [RELIEFDIR] [RELIEFDIST] from back face cycle
+* 13/10/09 RHA W36121 [RELIEFDIR] token has no value
+* 13/10/09 RHA W33257 Make Through Coolant token more widely available
+* 13/10/09 RHA W36415 Allow TNC TOOLCALL when #MOVE=0   PT_INDEX_HANDLER
+* 14/10/09 RHA W33489 Default coords, feeds, speeds etc to 5 digits before decimal
+* 15/10/09 RHA W33119 Correct ZLEVEL modality setting
+* Version 2010.2
+* 13/11/09 RHA W36665 Correct action of planar rotate on rotary angles
+* 20/11/09 RHA W36755 Make #MOVE diagnostic available in 3 axis CGDs
+* 11/12/09 RHA W36903 Add "Ask Once" to the NC Stlyes > Interactive Startup options
+* 17/12/09 RHA W37043 Shorten PITCH and LEAD note for Thread mill
+* 04/01/10 RHA W32567 Implement G28 Moves to Home etc. ISO Template
+* 15/01/10 RHA W37297 Add Single Shot option for Exact Stop
+* 26/01/10 RHA W37441 Make new hole depth variable modal
+* 26/01/10 RHA W37512 set chipbreak cycle depth to output now
+* 26/01/10 RHA W37512 set chipbreak cycle depth to output now - all mc configurations
+* 12/03/10 RHA W38140 Add ZMOVE to hole cycle and cycle points default output
+* 31/03/10 RHA W38513 Activate canned cycle switches for orthogonal planes
+* Version 2011.1
+* 02/07/10 RHA W38284 Add Reset_Spindle token to toolchange
+* 15/07/10 RHA W39785 Implement tap type setting at toolchange
+* 16/08/10 RHA W39553 Control allowable chamfer for helical hole cycle
+* 24/08/10 RHA W33388 Add more tokens to Program Stop
+* 16/09/10 RHA W31859 Improve use of hole clearance on approach
+* 21/09/10 RHA W40898 Refresh CPL variable when datum selecting
+* 27/09/10 RHA W40898 Allow for no index condition
+* 29/09/10 RHA W40981 Correct incremental datum setting (W40898 error)
+* Version 2011.2
+* 26/10/10 RHA W41396 Use MAXFEED for Rapid conversion
+* 28/10/10 RHA W32074 Fix #XSHIFT etc.
+* 29/10/10 RHA W38135 Alternative incremental datum base
+* 03/12/10 RHA W41396 Clarify NCStyle description text
+* 10/12/10 RHA W38043 Mill TNC and others - support feed type
+* 16/12/10 RHA W41997 Implement peck tapping
+* 20/12/10 RHA W31156 Rotary Sin=direction and angle option (+-360)
+* 22/12/10 RHA W41738 New option - Always use IJK with 360deg arcs
+* 11/01/11 RHA W42393 New Option - Control for negative radius when angle>180
+* 19/11/11 RHA W38043 Corrections & add thread mill cycle option
+* 14/02/11 RHA W42352 Separate clamping for secondary rotary axis
+* 22/02/11 RHA W42941 Re-organise Notes section & add macro number details
+* 23/02/11 RHA W42848 Make #USERAD options more descriptive
+* 28/02/11 RHA W42352 Separate clamping for secondary rotary axis
+* 28/03/11 RHA W31156 Initialise rotary direction for #ROTTYPE=4
+* Version 2012.1
+* 06/07/11 RHA W44708 Add Thread Mill tokens
+* 22/06/11 RHA W42241 Selective threadmill canned cycles
+* 28/07/11 RHA W43985 Implement feedrate multiplier
+* 03/08/11 RHA W42241 Move taper thread check onto Thread Mill tab
+* 10/08/11 RHA W42871 Make use of NEXTSPEED optional
+* 19/12/11 RHA W47452 Change #ROTTYPE=4 initialisation
+* 21/12/11 RHA W47111 Force GCode after Dwell
+* Version 2012.2
+* 19/01/12 RHA W45710 Force Index token on first toolchange
+* 31/01/12 RHA W47500 Implement auxiliary Z axes
+* 15/02/12 RHA W47500 Various minor fixes
+* 22/02/12 RHA W48595 Make PLANEGCODE more robust
+* 14/03/12 RHA W49403 Implement Quill Retract function
+* 15/03/12 RHA W49473 Option for W (quill) move to be tool tip
+* 15/03/12 RHA W49072 Add quill tokens [QUILL_BLOCK] [QUILLMOVE] to drilling code constructors.
+* 20/03/12 RHA W49473 Option for W (quill) move to be tool tip QUILL
+* 20/03/12 RHA W49072 More Quill tokens for drilling code constructors.
+* 27/03/12 RHA W49627 Quills - add clamp / unclamp codes
+* 03/04/12 RHA W49857 Add modality options for Quill Hole Cycles
+* 18/03/12 RHA W49403 Implement Quill Retract function
+* Version 2013.1
+* 31/05/12 RHA W48878 Phantom warnings from Subroutines
+* 30/08/12 RHA W43286 Support peck tapping via cycle point calls
+* 11/09/12 RHA W43286 Remove #USER1
+* 13/09/12 RHA W43286 Fix for multi-depth etc
+* 03/10/12 RHA W31018 Correct CPL tool tip option for Rapid to Tool Change
+* 16/10/12 RHA W43286 Fix peck tapping via cycle point calls
+* 29/10/12 RHA W53736 Fix peck tapping for negative cut increment
+* Version 2013.2
+* 14/11/12 RHA W31861 Assess CGX for milling, Implement for ISO
+* 15/03/13 GST W56083 Add [nMOVE] tokens to Coordinate Rotation code constructor
+* 20/03/13 GST W31039 Implement new coolant system - fase 1
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation
+* 20/03/12 GST W54195 Create tokens for NEXT tool parameters
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation - second batch
+* 21/03/13 GST W55128 Implement Rotary Axial interpolation - third batch
+* 21/03/13 GST W54191 Force feed for tapping - floating and rigid choice
+* 22/03/13 GST W31039 Implement new coolant system - fase 2
+* 27/03/13 GST W55128 Implement Rotary Axial interpolation - allow arcs
+* 28/03/13 GST W31039 Implement new coolant system - make autocool override optional
+* 23/05/13 GST W56952 Add Dwell Time to allow spindle to change speed
+* Version 2014.1
+* 22/07/13 GST W55730 Implement rotary precision
+* 22/07/13 GST W57644 Add Rotary axis tokens to Set Work Datums
+* 07/08/13 GST W49799 Allow output of datum override in Set Work Datums
+* 27/08/13 GST W43623 BackBore/Face cycle points option
+* 04/09/13 GST W59852 Add support for Dynamic Offset
+* 09/10/13 GST W59433 Add support for 3D compensation
+* 14/10/13 GST W60594 Allow CRC off on rapid retracts
+* Version 2014.2
+* 24/02/14 GST W62726 Implement Turning on milling machines
+* 25/02/14 GST W62726 Move turning specifics to dedicated files
+* 25/05/14 GST W62726 Create turning specific RAT
+* 06/03/14 GST W62726 Various corrections and new tokens
+* 07/03/14 GST W62726 Add feed type for turning
+* 11/03/14 GST W62726 Create Cancel-CSS token
+* 13/03/14 GST W63762 Add breakout call to Start and End
+* Version 2015.1
+* 09/07/14 GST W64574 Add Integrex ID conversion
+* 10/07/14 GST W62726 Assign milling mode to CANCEL-TURN-MODE
+* 30/07/14 GST W32318 Implement -+360 angular range
+* 30/07/14 GST W64059 Add Force XYZ to 3x posts
+* 04/08/14 GST W65629 Fix direction assignment
+* 11/08/14 GST W64177 New codes for angular direction
+* 26/08/14 GST W62726 Add XZ tool length tokens to tooling list
+* 29/08/14 GST W67146 Implement move to TC/Home variations for ToM
+* 03/09/14 GST W67146 Assign correct modes at MtTc
+* Version 2015.2
+* 10/12/14 GST W66367 Reestructure
+* 16/12/14 GST W79582 Add MAXRPM to Turn RAT and TC
+* 07/01/15 ATA W80879 Code Wizard - Consistency in IJK Arc Centre options (replicated in milling)
+* 07/01/15 GST W80110 Implement M&H Probing
+* 19/01/15 ATA W63186 Code Wizard - "Force feed output at start" to be checked by default
+* 20/01/15 ATA W59919 Templates Mill ISO - Correct code con debug for Spindle End
+* 21/01/15 GST W80110 Separate M&H & Renishaw at tokens/formats levels
+* 22/01/15 ATA W62982 Templates Mill - create modality options for back bore / face parameters
+* 05/02/15 GST W80347 Implement support for Simultaneous indexing
+* 10/02/15 GST W32377 Printing function for Renishaw
+* 11/02/15 GST W81600 Implement Program Stop on Move to Home/TC
+* Version 2016.1
+* 16/06/15 GST W83495 Allow thread turn on YZ plane
+* 16/06/15 GST W83540 Add missing X Taper Thread Parameters
+* 27/07/15 GST ECAM-2343 Implement Angle at Toolchange
+*
+**************************************************************************
+*
+*						*************************************************************
+*						*	Template Dependant Language extensions for Code Wizard	*
+*						*************************************************************
+*************************************************
+*	Tab Name 	:	General G-Codes
+*************************************************
+*************************************************
+*	Tab Name 	:	Hole Cycle G-Codes
+*************************************************
+*************************************************
+*	Tab Name 	:	Datum G-Codes
+*************************************************
+* Setvar^DATA1(25)^54^Datum G-Codes^REAL^Work Coord System 1
+* Setvar^DATA1(26)^55^Datum G-Codes^REAL^Work Coord System 2
+* Setvar^DATA1(27)^56^Datum G-Codes^REAL^Work Coord System 3
+* Setvar^DATA1(28)^57^Datum G-Codes^REAL^Work Coord System 4
+* Setvar^DATA1(29)^58^Datum G-Codes^REAL^Work Coord System 5
+* Setvar^DATA1(30)^59^Datum G-Codes^REAL^Work Coord System 6
+********************************************
+*	Tab Name 	:		M-Codes
+********************************************
+*************************************************
+*	Tab Name 	:	More Hole Cycle G-Codes
+*************************************************
+*************************************************
+*	Tab Name 	:		Coolant Control
+*************************************************
+*************************************************
+*	Tab Name 	:		New Datum Setting
+*************************************************
+*************************************************
+*	Tab Name 	:		NC File General			*
+*************************************************
+****************************************************************
+*   Tab Name    :      Setup Sheet
+****************************************************************
+*************************************************
+*	Tab Name 	:		Block Numbers
+*************************************************
+*************************************************
+*	Tab Name 	:		Feed Moves
+*************************************************
+*************************************************
+*	Tab Name 	:		Rapid Traverse
+*************************************************
+*************************************************
+*	Tab Name 	:		Circular Interpolation
+*************************************************
+*************************************************
+*	Tab Name 	:		Cutter Compensation
+*************************************************
+*************************************************
+*	Tab Name 	:		Hole Cycles
+*************************************************
+*************************************************
+*	Tab Name 	:		Thread Mill Cycle
+*************************************************
+*************************************************
+*	Tab Name 	:		Subroutines
+*************************************************
+*************************************************
+*	Tab Name 	:		Tool Change
+*************************************************
+***********************************************************
+* Workplane definition
+***********************************************************
+***********************************************************
+*	Tab Name 	:		4-5 Axis Machining
+***********************************************************
+******************************************************************************************
+*	Modal Variables
+****************************************************************
+*   Tab Name    :      Debug
+****************************************************************
+****************************************************************
+*
+*	*****************************************
+*	*	Tab Name	:	Program Start		*
+*	*****************************************
+*
+*	Note ! Cannot be a procedure because %SUBROUTINE must be defined in the START or END macros
+*
+*	Rotary Axes set to zero for start of program
+*$DEBUG=Y
+*****************************************************************************************************************
+*	Note ! Cannot be a procedure because %SUBROUTINE must be defined in the START or END macros
+*   *************************************************
+*                      Code constructors
+*   *************************************************
+*   *************************************************
+*	*	Tab Name	:	Set-Up / Tooling Sheet		*
+*	*************************************************
+*
+*
+*
+* Setup sheet header if requested (not in loop)
+*
+*	Remove duplicate tools from Tool Sheet
+*
+* Setup sheet trailer if requested (not in loop)
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Set Tooling Data			*
+*	*************************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Rapid Move			*
+*	*****************************************
+*
+* Output speed block ?
+*
+*	*********************************************
+*	*	Tab Name	:	Linear Interpolation	*
+*	*********************************************
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Circular Interpolation   	*
+*	*************************************************
+*
+* 2D only, blank unwanted values
+* Output speed block ?
+* Enables control of multi-helix block for TNC
+* Call to get number of turns
+* Output speed block ?
+* Suppress number of turns if 0
+*
+*	*****************************************
+*	*	Tab Name	:	Dwell				*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Cutter Compensation	*
+*	*****************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Cancel Cutter Compensation	*
+*	*************************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	3D Cutter Compensation	*
+*	*****************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Cancel Cutter Compensation	*
+*	*************************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Drill Cycle					*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Counterbore Cycle			*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Peck Drill Cycle			*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Tapping Cycle				*
+*	*************************************************
+*
+*
+*******************************
+* Code for point based peck tapping
+* Repeated calls for Peck Tapping
+*******************************
+* Rigid or floating
+* Output speed block ?
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Ream / Bore Cycle			*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Bore Cycle					*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Chipbreak Cycle				*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*
+*	*********************************************
+*	*	Tab Name	:	Back Bore Cycle			*
+*	*********************************************
+*
+*
+* Set Relief token values
+* Output speed block ?
+*	**********************************
+*	* Tab Name :  Back Bore Longhand *
+*	**********************************
+*
+*
+*	*********************************************
+*	*	Tab Name	:	Back Face Cycle			*
+*	*********************************************
+*
+*
+* Output speed block ?
+*	***********************************
+*	* Tab Name :  Back Face Longhand  *
+*	***********************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Helical Cycle			*
+*	*************************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Thread Mill Cycles   		*
+*	*************************************************
+*
+*
+* Set Minor Diameter value
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Hole Cycle Points			*
+*	*************************************************
+*
+*
+* Output speed block ?
+*******************
+*
+* Repeated calls for Peck Tapping
+*
+*
+*
+*******************
+*
+*	*************************************************
+*	*	Tab Name	:	Back Cycle Points			*
+*	*************************************************
+*
+*
+* Output speed block ?
+*
+*	*************************************************
+*	*	Tab Name	:	Cancel Canned Cycle			*
+*	*************************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	First Toolchange	*
+*	*****************************************
+*
+* Output speed block ?
+*
+*	*****************************************
+*	*	Tab Name	:	General Toolchange	*
+*	*****************************************
+*
+* Output speed block ?
+*
+*	*****************************************
+*	*	Tab Name	:	Last Toolchange		*
+*	*****************************************
+*
+* Output speed block ?
+*
+*	*****************************************
+*	*	Tab Name	:	Core Toolchange	*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Manual Toolchange	*
+*	*****************************************
+*
+* Move to Manual TC Position
+* Move to ATC Position, Z First
+* Sequence - All Stop
+* Sequence - Unload ATC
+* Sequence - Move to Manual TC Position
+* Sequence - Unload Manual
+* Sequence - Move to ATC Position
+* Sequence - Load Manual
+* Sequence - Re-Start
+*
+*	*****************************************
+*	*	Tab Name	:	Spindle				*
+*	*****************************************
+*
+* manual toolchanges start and restart spindle on their own
+* but do not update DIRECTION
+* in this unique circumstance try use direction hold
+* Manual unload resets spindle to off
+*
+*	*****************************************
+*	*	Tab Name	:	Program Stop		*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Coolant				*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Exact Stop			*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Feed / min / rev	*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Comment				*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Insert NC Code		*
+*	*****************************************
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	Re-Select Tool Length Offset	*
+*	*****************************************************
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	High Speed M/c - ON				*
+*	*****************************************************
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	High Speed M/c - OFF			*
+*	*****************************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Warnings        			*
+*	*************************************************
+*
+*****************************************************
+* Auxiliary Axes
+*****************************************************
+*
+*	*****************************************
+*	*	Tab Name	:	Rapid To Toolchange	*
+*	*****************************************
+*
+* Output speed block ?
+*
+*	*********************************************
+*	*	Tab Name	:	Feed After Toolchange	*
+*	*********************************************
+*
+* Output speed block ?
+* Output speed block ?
+*
+*	*********************************************
+*	*	Tab Name	:	Rapid After Toolchange	*
+*	*********************************************
+*
+* Output speed block ?
+* Output speed block ?
+*
+*	*****************************************
+*	*	Tab Name	:	Rapid To Home		*
+*	*****************************************
+*
+* Output speed block ?
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Set Work Datums				*
+*	*************************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Select Work Datums			*
+*	*************************************************
+*
+*
+*	Datum Shift- no rotary motion
+*   Called from Datum Shift and Index Pallet commands for Absolute Datum setting
+*	Index Pallet with Rotary output via Index Pallet Code Constructor.
+*
+*
+*	Datum Shift- no rotary motion
+*   Called from Datum Shift and Index Pallet commands for Incremental Datum setting
+*	Index Pallet with Rotary output via Index Pallet Code Constructor.
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Subroutine Start			*
+*	*************************************************
+*
+* Output mode change for subroutines if different
+*
+*	*************************************************
+*	*	Tab Name	:	Coordinate Rotate			*
+*	*************************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Subroutine Call				*
+*	*************************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Subroutine End				*
+*	*************************************************
+*
+* Output mode change for subroutines if different
+*	*************************************************
+*	*	Tab Name	:	Translate					*
+*	*************************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Spline Parameter   			*
+*	*************************************************
+*
+* Following code constructors for MPL support only
+* Dummy procedures
+*** Format table
+* Note token numbers 0-14 should not be changed
+* 10 is null output for initialisation of variables.
+* FT_SECONDARYROT2, A,3,2,640,4,2,640,	50		Head - Secondary Setting
+*** End of include file A:\Pams\cam\machdef\template\mill-iso.cgi ***
+*** Start of include file Mill-Renishaw-Probing.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-Iso-Probing.cgi
+*	Author:		Sam Haslar / RHA
+*   Date:       22 August 20085
+*
+* New file for adaptive milling templates derived from earlier multiplane template                                *
+**************************************************************************
+*   Change History
+* Version 2009.1
+*          FIRST ISSUE
+* Change output procedures to code constructors
+* Change macro numbers to 301 series after discussion with SJO
+* Remove command details
+* 26/08/08 RHA Update logic to latest received mac file
+* 11/09/08 RHA Update logic to latest received mac file
+* 16/09/08 RHA Trailing comma - macro 304 definition
+* 18/09/08 RHA Incorporate latest logic changes from Sam Hasler
+* 24/09/08 RHA DEV00024504 Code constructor formatting changes
+* 01/10/08 RHA DEV00025060 Force distance positive on 4th axis probe cycles
+* Version 2009.1 SP
+* 01/10/08 RHA DEV00025318 Correct datum setting for probe cycles
+* Version 2010.1
+* 05/08/09 RHA WI33007 Fix S word for datum Over-ride
+* 05/08/09 RHA WI35305 Add Probing mode control tokens etc
+* Version 2010.2
+* 04/12/09 RHA W34615 Add Probing first Z for G43 code constructor
+* 19/01/10 RHA W37370 Remove PROBEANG tokens from the 4th axis code constructors
+* Version 2011.2
+* 28/01/11 RHA W42563 Correct corner probe approach
+* Version 2013.2
+* 29/11/12 RHA W54472 Correct token colour coding, Probe first Z move
+* Version 2015.2
+* 07/01/15 GST W80110 Implement M&H Probing
+* 20/01/15 GST W80110 Separate M&H & Renishaw at tokens/formats levels
+* 23/02/15 GST W35486 Add Work Offset functions
+* 26/02/15 GST W82041 Call Customisation Breakout from Probing macros
+* 04/03/15 GST W32377 Printing function for Renishaw
+* Version 2016.1
+* 23/06/15 GST ECAM-1548 Implement Probing NC-Gage
+*
+*************************************************************************************
+*         prototype probing macros
+*************************************************************************************
+*
+*	This file implements the following cycles:
+*
+*	Feed:
+*       1       Move probe
+*	Bore/Boss:
+*       2       Bore 3 Point
+*       3       Boss 3 Point
+*       4       Bore 4 Point
+*       5       Boss 4 Point
+*	Surface:
+*       6       Probe Surface
+*       7       Angled Single surface
+*	Web/Pocket
+*       8       Probe Web/Pocket
+*       9       Angled Web / Pocket
+*	Internal/External Corner:
+*       10      Internal Corners
+*       11      External Corners
+*	4th Axis:
+*       12      4th Axis X
+*       13      4th Axis Y
+*
+*	Modifier 250 mapped to system variable 62 (PATHTRACE) will be set to one of the above cycle numbers
+*	Modifier 233 mapped into 402 (CWNVAR402) - contains Function list
+*	Modifier 234 mapped into 403 (CWNVAR403) - contains Print check box
+*	Modifier 235 mapped into 404 (CWNVAR404) - contains Work Coordinate list
+*	Modifier 236 mapped into 405 (CWNVAR404) - contains extendend Work Coordinate list
+*
+*************************************************************************************
+* Notes
+*************************************************************************************
+*
+*	Find and count (possible) format table references
+*	grep -E "=[0-9]+\]" ..\ext\VAB-probe.mxt |sed 's/^.*=\([0-9]\+\)\].*$/\1/g' | C:\cygwin\bin\sort -n | uniq -c
+*
+*	machdef\error.mpp
+*
+*	Probing entries in Format Table start at Line 3455 of VAB-probe.mxt
+*************************************************************************************
+* Internal Variables - NOT exposed to Code Wizard users
+*************************************************************************************
+* All Cycles (except cycle 1)
+* Cycles 2, 3, 4 & 5
+* Cycle 6
+* Cycle 8
+*************************************************************************************
+* Tokens for Code Wizard:
+*************************************************************************************
+* %DECLARE=#BOREBOSSZDEPTH
+* %DECLARE=#WEBPOCKETZDEPTH
+*					Cycles the Token is output for.		 Below are the Renishaw Inspection Plus definitions of these inputs.
+* #FEEDX			1                             	X = The target positions for the probe positioning move.
+* #FEEDY			1	                          	Y = The target positions for the probe positioning move.
+* #FEEDZ			1	                        	Z = The target positions for the probe positioning move.
+* #TRX				          6   |   |  |       	X = The surface position or size.
+*					              8   |  |       	X = Nominal size of feature when measured in the X-axis.
+*					                  10 11      	X = c.
+* #TRY				          6   |   |  |        	Y = The surface position or size.
+*					              8   |  |        	Y = Nominal size of feature when measured in the Y-axis.
+*					                  10 11     	Y = Nominal corner position Y-axis.
+* #TRY				          6                  	Z = The surface position or size.
+* #FEEDRATE			1 * * * * * * * * *  *  *  *	F = The modal feedrate for all protected positioning moves. The feedrate will be modal to this macro and subsequent feedrate calls are unnecessary unless a change of feedrate is required. The maximum safe fast feedrate established during installation should not be exceeded.
+*														(Note: Cycle 1 is called before and after all the other cycles to perform linking moves)
+*													* Feedrate passed to all cycles for TNC support
+* #AngleA			  2 3                     		A = The first angle for vector measurement, measured from the X+ axis direction.
+* #ANGLE			            7   |           	A = Direction of probe measurement measured from the X+ axis direction.
+*						            9          		A = Angle of the surface to be measured from the X+ axis direction.
+* #AngleB			  2 3                      		B = The second angle for vector measurement, measured from the X+ axis direction.
+* #AngleC			  2 3                      		C = The third angle for vector measurement, measured from the X+ axis direction.
+* #DIAMETER			  2 3 4 5                    	D = Nominal size of the feature.
+* #DISTANCE			            7   |             	D = Nominal distance to the surface (radial).
+*					                9           	D = Nominal size of the feature.
+* #?????X			                        12  	X = The X-axis distance between Z1 and Z2 measurement positions.
+* #?????Y			                           13 	Y = The Y axis distance between Z1 and Z2 measurement positions.
+* #BOREBOSSZDEPTH	  2 3 4 5                     	Z = The absolute Z-axis position when measuring a boss feature. If this is omitted a bore cycle is assumed.
+* #WEBPOCKETZDEPTH	              8 9             	Z = The absolute Z axis position when measuring a web feature. If this is omitted a pocket cycle is assumed.
+* #4THAXISZDEPTH	                        12 13	Z = The Z-axis expected surface position.
+* #RADCLEAR	  2 3 4 5     8 9             	R = This is an incremental dimension that is used in external features, e.g. bosses and webs, to give a radial clearance from the nominal target surface prior to a Z-axis move. Default = 5 mm (0.200 in).
+*                     2 3 4 5     | |              	-R= This is similar to Rr, except that the clearance is applied in the opposite direction to force an internal boss cycle. Default = 5 mm (0.200 in).
+*					              8 9            	-R= This is similar to Rr, except that the clearance is applied in the opposite direction to force an internal web cycle. Default = 5 mm (0.200 in).
+* #SecondX			                  10 11     	I = Incremental distance to the second probe position along the X-axis (positive value is assumed). Default = no move.
+* #SecondY			                  10 11     	J = Incremental distance to the second probe position along the Y-axis (positive value is assumed). Default = no move.
+* #DATUM			  2 3 4 5 6 7 8 9 10 11 12 13	S = The work offset number which will be set.
+*														The work offset number will be updated.
+*														S1 to S6 (G54 to G59)
+*														S0 (external work offset).
+*														S101 to S148 (G54.1 P1 to G54.1 P48) additional offsets option.
+*														New work offset = active work offset + error.
+*														New external offset = external offset + error.
+* #OVERTRAVEL		  2 3 4 5 6 7 8 9 10 11 |  |	Q = The probe overtravel distance for use when the default values are unsuitable. The probe will then travel beyond the expected position when it searches for a surface. Default = 4 mm (0.16 in) in the Z-axis, and 10 mm (0.394 in) in the X and Y axes.
+*                                           12 13	Q = The probe overtravel distance for use when the default values are unsuitable. The probe then travels beyond the expected position when it searches for a surface. Default = 10 mm (0.4 in).
+* #TOLERANCE		  2 3 4 5 6 7 8 9           	H = Tolerance value of a feature dimension being measured.
+*														Example: For dimension 50.0 mm +0.4 mm –0 mm, the nominal
+*														tolerance is 50.2 mm with H.2.
+*														(For dimension 1.968 in +0.016 in –0 in, the nominal tolerance is 1.976 in
+*														with H.008.)
+*													(Guy Brown's Description: Size Tolerance – Alarm if incorrect size)
+* #POSITIONTOLERANCE  2 3 4 5 6 7 8 9 10 11      	M = True position tolerance of a feature. A cylindrical zone about the theoretical position.
+* #UPPERTOLERANCE	  2 3 4 5 6 7 8 9 10 11     	U = Upper tolerance limit. If this value is exceeded there is no work offset updated and the cycle is stopped with an alarm. This tolerance is applied to both size and position where applicable. Example: U2. to set the upper tolerance limit to 2 mm.
+* #ANGULARTOLERANCE	                  10 11 |  | 	B = Angle tolerance. This applies to both X and Y surfaces. It is equal to half the total tolerance, e.g. ±0.25 degrees = B.25 tolerance.
+*					                        12 13	B = Set a tolerance on the angular position of the feature. It is equal to half the total tolerances, e.g. component dimension 45 degrees (±0.25 degrees) the 4th axis would be positioned to 45 degrees and B.25 tolerance.
+* TODO - for Marpos / m&h
+* PROBETYPE
+* OBSTRUCTION
+* CORNER QUADRANT	(top left, top right, bottom left, bottom right)
+* Macro allocation
+* 301  Probe_Surface
+* 302  Probe_Bore/Boss
+* 303  Probe_Feed
+* 304  Probe_Web/Pocket
+* 305  Probe_Corner
+* 306  Probe_4th_Axis
+*************************************************************************************
+* <Check [LAST=0] [#FEEDX=0][#FEEDY=1][#FEEDZ=2]>
+*TODO check outut is minimal (i.e. variables only output if changed) See %OUTPUT-IF-CHANGED
+*<* End of Array>
+*************************************************************************************
+* Move to start position for measuring moves
+*************************************************************************************
+*************************************************************************************
+* Move to clearance plane after measuring moves
+*************************************************************************************
+*************************************************************************************
+* Dialog: Probe Bore/Boss
+*************************************************************************************
+*NB FEEDRATE Unused with Fanuc, included for possible TNC support
+* See also token mappings for each cycle
+************************************
+*%CALL=ARRAY-DUMP
+*%CALL=VAR-DUMP
+*Bore without obsticle starts at ZDEPTH (fanuc)
+*Bore without obsticle doesn't need ZDEPTH in gauging NC Code (fanuc)
+*************************************************************************************
+* Dialog: Probe Surface
+*************************************************************************************
+*NB FEEDRATE Unused with Fanuc, included for possible TNC support
+*%CALL=ARRAY-DUMP
+*************************************************************************************
+* Dialog: Probe Web/Pocket
+*************************************************************************************
+*NB FEEDRATE Unused with Fanuc, included for possible TNC support
+* See also token mappings for each cycle
+************************************
+*%CALL=ARRAY-DUMP
+*%CALL=VAR-DUMP
+*************************************************************************************
+* Dialog: Probe Internal/External Corner
+*************************************************************************************
+* Internal
+*External
+*************************************************************************************
+* Dialog: Probe 4th Axis
+*************************************************************************************
+*************************************************************************************
+* Support procedures - mode control
+*************************************************************************************
+* CWNVAR402= 1     - measure F0
+*          = 2     - shift and update actual work coord sys F7
+*          = 3     - update actual coord sys F8
+*          = 4     - check position F500
+*          = 5     - check size F600
+*          = 6     - check form F700
+*          = 7     - Update Work Coordinate (G54 to G59) F1-F6
+*          = 8     - Update Additional Work Coordinate (G54P1 to G54P300) F101-F400
+*
+* CWNVAR403= 0     - no printing
+*          = 1     - print result
+*
+* CWNVAR404= 0-5   - Update Work coordinate (G54 to G59)
+* CWNVAR405= 1-300 - Update Extra Work coordinate
+* Update Extended Work coordinate
+* Secondary range G54P1 to G54P48
+* Update Work coordinate
+* Primary range G54 to G59
+* Called only from token PROBE_MODE (Tool Change)
+* Called from token PROBE_ON & PT_PROBE_MODE
+* Called from token PROBE_OFF & PT_PROBE_MODE
+*************************************************************************************
+*         prototype probing code constructors
+*************************************************************************************
+*************************************************************************************
+* CYCLE 1: Probe Feed
+*************************************************************************************
+* Trap first Z move after toolchange for G43
+*************************************************************************************
+* CYCLE 2: |_| - Three Point Bore
+*************************************************************************************
+*************************************************************************************
+* CYCLE 3: |¯| - Three Point Boss
+*************************************************************************************
+************************************
+*************************************************************************************
+* CYCLE 4: |_| - Four Point Bore
+*************************************************************************************
+*************************************************************************************
+* CYCLE 5: |¯| - Four Point Boss
+*************************************************************************************
+*************************************************************************************
+* CYCLE 6: Single Surface
+*************************************************************************************
+*************************************************************************************
+* CYCLE 7: Angled Single Surface
+*************************************************************************************
+*************************************************************************************
+* CYCLE 8: Web/Pocket
+*************************************************************************************
+*************************************************************************************
+* CYCLE 9: Angled Web/Pocket
+*************************************************************************************
+*************************************************************************************
+* CYCLE 10: Internal Corner
+*************************************************************************************
+*************************************************************************************
+* CYCLE 11: External Corner
+*************************************************************************************
+*************************************************************************************
+* CYCLE 12: 4th Axis X
+*************************************************************************************
+*************************************************************************************
+* CYCLE 13: 4th Axis Y
+*************************************************************************************
+*** End of include file A:\Pams\cam\machdef\template\Mill-Renishaw-Probing.cgi ***
+*** Start of include file mill-whiteboard-CGX.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	Whiteboard.cgi
+*	Author:		RHA
+*   Date:       09 December 2005
+*
+* New file for all adaptive template
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 14/02/05 RHA DEV00016309 Fix long lines for codecon.txt
+* Version 12.5
+* 19/02/08 RHA DEV00022469 Add note prohibiting duplicate macros and procedures
+* Version 2009.2
+* 26/01/09 RHA DEV00025914 Add attribute_extension to macros and whiteboard
+* 27/01/09 RHA DEV00025914 Put new procedure in new code constructor - allows CGD compilation
+* 17/02/09 RHA DEV00025914 Prevent user deletion of new procedure
+* Version 2013.2
+* 27/11/12 RHA W54303 CGX variant for milling whiteboard
+* 29/11/12 RHA W54439 Make Customisation Whiteboard and PDI attribute user tokens green
+* Version 2014.2
+* 11/03/14 GST W63762 Add macro breakout
+* 13/03/14 RHA W55288 Add Default Sequence to breakout Code Constructor
+*
+**************************************************************************
+*	*****************************************
+*	*	Tab Name	:	Hackers Corner	*
+*	*****************************************
+*
+* Procedure for additional attribute function in connection with PDI customisation
+* Terminate the procedure defining the code_constructor
+* Dummy procedure for customised function
+* Example declaration
+* Dummy procedure for customised function
+* %ENDM for the last procedure is contained within the code_constructor
+*** End of include file A:\Pams\cam\machdef\template\mill-whiteboard-CGX.cgi ***
+*** Start of include file mill-iso-macros.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-iso-macros.cgi
+*	Author:		RHA
+*   Date:       11 November 2005
+*
+* New file for adaptive milling templates derived from earlier multiplane template                                *
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 06/02/06 RHA DEV00007742 Single helix option for Thread Mill
+* 28/02/06 RHA DEV00016465 Remove macro 101 - old spindle control
+* 03/03/06 RHA DEV00016525 Correct longhand drill output
+* 07/03/06 RHA DEV00015555 High Speed mode tolerance
+* 08/03/06 RHA DEV00016567 Use system var for work datum name override
+* Version 11.0
+* 18/07/06 RHA DEV00017692 Tidy Code Generator options in hole macros
+* 01/08/06 RHA DEV00017489 #Macro not set for hole cycles
+* 07/08/06 RHA DEV00012241 Add High speed and coolant controls to Tool Change*
+* 08/08/06 RHA DEV00017341 Correct Tool Length Offset setting
+* Version 11.5
+* 18/07/06 RHA DEV00012692 Correct drill sub output for 1 location
+* 26/10/06 RHA DEV00018471 HPCC improvements
+* 13/12/06 RHA DEV00018738 Correction for profile start
+* Version 11.75
+* 03/04/07 RHA DEV00017611 Implement 21 flag in rotary rotate
+* 18/05/07 RHA DEV00017611 Change withdrawn, pending other fixes
+* Version 12.00
+* 03/04/07 RHA DEV00020278 Allow Macro15 access to USERVAR2
+* Version 12.25
+* 03/12/07 RHA DEV00021534 Enable longhand tapping
+* Version 12.50
+* 04/02/08 RHA DEV00006310 Allow canned cycles in Rotary Rotate
+* Version 2009.1
+* 07/07/08 RHA DEV00023548 Implement NC Code Suppression
+* 06/08/08 RHA DEV00024310 Back bore and face in milling
+* 11/08/08 RHA DEV00024364 Implement helical hole cycles
+* 26/08/08 GST DEV00022751 Thread mill depth in canned cycle
+* 16/09/08 RHA DEV00024818 Back Bore and Helical parameters - level retract etc.
+* Version 2009.2
+* 07/11/08 RHA DEV00025098 Make tool angle available in setup & core tool change
+* 26/01/09 RHA DEV00025914 Add attribute_extension to macros and whiteboard
+* 02/04/09 RHA DEV00023944 Fix unwanted angles from rotary rotate (head/table)
+* 14/07/09 RHA WI34873 New Thread Mill - Add new macro and processing
+* 17/07/09 RHA WI34873 New Thread Mill - Use Hole cycle point processing
+* 18/04/09 RHA W34873 Initialise CRC controls in Macro 675
+* Version 2010.1 SP1
+* 13/10/09 RHA W32420 Correct setting of stationary angle in rotary rotate
+* 08/12/09 RHA W35163 Add FEED modifier to macro 672
+* 15/01/10 RHA W37297 Add Single Shot option for Exact Stop
+* 29/01/10 RHA W37371 Warn for subroutines if converted to longhand (Thread mill)
+* 31/03/10 RHA W38513 Activate canned cycle switches for orthogonal planes
+* 11/05/10 RHA W39137 Set #HOLEOFFSET in a procedure and call from Move Angular
+* 29/09/10 RHA W40981 Correct incremental datum setting (W40898 error)
+* Version 2011.2
+* 26/10/10 RHA W32074 Datum Shift, modify GETCPL call in macro 48
+* 29/11/10 RHA W33515 Fix incremental angles for rotary rotate
+* 15/12/10 RHA W38043 Set FEEDTYPE system var in Macro 21
+* 16/12/10 RHA W41997 Implement peck tapping
+* 05/04/11 RHA W43835 Force G Code output after Peck call (Macro=35)
+* Version 2012.1
+* 17/05/11 RHA W43644 Correct dwell code output, back bore etc (Macro=71)
+* 21/06/11 RHA Selective threadmill canned cycles
+* Version 2012.2
+* 25/10/11 RHA W45241 Macro trace fixes
+* 06/02/12 RHA W47500 Implement auxiliary Z axes
+* 22/02/12 RHA W48595 Make PLANEGCODE more robust
+* 19/03/12 RHA W49403 Implement Quill Retract function
+* Version 2013.2
+* 20/03/13 GST W31039 Implement new coolant system - fase 1
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation
+* 16/05/13 RHA W54506 Remove [] from Macro=109 definition
+* Version 2014.1
+* 05/09/13 GST W59942 Fix null index detection
+* 07/10/13 GST W60131 Initialise position at Move Angular when in Dynamic mode
+* Version 2014.2
+* 11/03/14 GST W63762 Add macro breakout
+* Version 2015.1
+* 07/07/14 GST W61121 Implement Maximum Linear Separation
+* 31/07/14 GST W65629 Fix direction assignment
+* 31/07/14 GST W66427 Fix angular data after Move Angular
+* 08/09/14 GST W61121 Disable Maximum Linear Separation
+* Version 2015.2
+* 11/02/15 GST W81600 Implement Program Stop on Move to Home/TC
+*
+**************************************************************************
+* Force #TOOLCHANGE=#FALSE to prevent SPEEDS lookahead
+* Suppress CRC calls until Subfunct is set
+* <HOLEDIAM [HOLEDIAM=0] CHAMFERWIDTH [CHAMFERWIDTH=0] CHAMFERANGLE [CHAMFERANGLE=0] PITCH1 [PITCH1=0] PITCH2 [PITCH2=0] BOTTOMFINISH [BOTTOMFINISH=0] MACHDIR [MACHDIR=0]>
+* %IF STYPE=1 %THEN
+* Set Holds
+* #ROTVALS controls use of ROT1/ROT2 values for rotary positioning
+* #ROTVALS=#FALSE
+*				Only applies to Subprogram style NOT inline block number reference.
+*Set HOLD values
+* SF201 Reverse spindle in longhand tapping
+*************************************************************
+*	Miscellaneous "User Defined" Macros : Reserved			*
+*	==============================================			*
+*															*
+*************************************************************
+*	101		Spindle				Stop/ CLW/ CCLW/ CLW+Coolant/ CCLW+Coolant
+*	102		Reserved (Used by software?)
+*	103		Stop Type			Program/ Optional
+*	104		Coolant				Flood/ Mist/ Off
+*	105		Block Skip			Off/ On
+*	106		Exact Stop/Smooth	Off/On
+*	107		Reserved (Used by software?)
+*	108		Comment				Text string input
+*	109		Insert NC Code		NC code literal input
+*	110		High Speed M/C		Off/On
+*	111		Reserved
+*	112		Reserved
+*	113		Reserved
+*	114		Reserved
+*	115		Reserved
+*	116		Length Offset		Tool Length Offset
+*	117		Reserved
+*	118		Reserved
+*	119		Reserved
+*	120		Reserved
+*	121		Reserved
+*	122		Reserved
+*	123		Reserved
+*	124     NC Code Output Suspension  On/Off
+*	4001 Swarf Conveyor (turning)
+*	4002 Maximum Point Separation (milling) - disabled indefinitely. See w61121.
+* This macro allows the user to suspend NC code via a misc function
+* Note that it relies on MASK being reset by Code Generator for each macro call
+* In each macro -  %IF #NCSUPPRESS=1 %THEN MASK=1
+* Suspend NC Code Output
+* Disabled indefinitely - see W61121.
+* %MACRO=4002=..=Maximum Linear Separation=400,401
+* $SPC=" "
+* #MACRO=4002
+* %IF NOCYCLE=0 %THEN #EXECMACRO=#MACRO
+* %CALL=CODECON_BREAKOUT
+* %IF #NCSUPPRESS=1 %THEN MASK=1
+* #4002ACTIVE=CWNVAR400
+* #MAXMOVE=CWNVAR401
+* %IF #MAXMOVE=#FUNNY %THEN #MAXMOVE=0
+* @END
+* %ENDM
+* New macro drives availability of new coolant options
+*** End of include file A:\Pams\cam\machdef\template\mill-iso-macros.cgi ***
+*** Start of include file mill-procedures-basic.cgi ***
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	mill-procedures-basic.cgi
+*	Author:		RHA
+*   Date:       11 November 2005
+*
+* New file for adaptive milling templates derived from earlier multiplane template
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 16/12/05 RHA DEV00014907 TLO setting
+* 16/12/05 RHA DEV00015647 Add R in XY Only Option
+* 02/02/06 RHA DEV00012705 Set radius for thread milling
+* 06/02/06 RHA DEV00007742 Single helix option for Thread Mill
+* 06/02/06 RHA DEV00015578 Thread mill - G40 if G01 followed by G00
+* 10/02/06 RHA DEV00016236 Spindle control fixes
+* 10/02/06 RHA DEV00016273 Fix G2/3 swap for G18/19
+* 10/02/06 RHA DEV00016282 Thread mill move correction
+* 15/02/06 RHA DEV00016297 Incremental datum shift
+* 20/02/06 RHA DEV00016344 Implement IJK vector for 5 axis cycle
+* 27/02/06 RHA DEV00016236 Spindle control fixes
+* 27/02/06 RHA DEV00016320 Rapid after toolchange with thread mill canned cycle
+* 27/02/06 RHA DEV00016464 Force spindle code out if stop
+* 28/02/06 RHA DEV00016465 Correct 2D arc output in thread mill
+* 28/02/06 RHA DEV00016369 Fix Convert rapid to feed
+* 01/03/06 RHA DEV00016464 Add warning for feed moves at Spindle Stop
+* 03/03/06 RHA DEV00016525 Correct longhand drill output
+* 08/03/06 RHA DEV00016567 Use system var for work datum name override
+* 14/03/06 RHA DEV00016367 Correct spindle control
+* 14/03/06 RHA DEV00016464 Correction
+* 16/03/06 RHA DEV00016662 Suppress unwanted CRC warning
+* 21/03/06 RHA DEV00007321 Correct Datum setting - limits
+* 21/03/06 RHA DEV00012705 Correct radius in helix output for thread mill
+* 22/03/06 RHA DEV00016714 Remove diagnostic output line for #DATUMMAX
+* 24/03/06 RHA DEV00016742 Correct index codecon calls for 4 axis, #AXISTYPE2=#AXISTYPE1
+* 28/03/06 RHA DEV00016749 Correct subroutines processing for hole cycles
+* Version 10.75
+* 16/05/06 RHA DEV00017213 Correct index handling for no rotation cases
+* 18/05/06 RHA DEV00017213 Fine tune
+* 23/05/06 RHA DEV00017233 Correction for always use radius
+* 24/05/06 RHA DEV00017039 Fix spindle directions in tapping
+* 06/06/06 RHA DEV00017232 5 Axis check in Nomotion as well at PT_Rotary_Axes
+* 13/06/06 RHA DEV00017523 Prevent output of longhand tapping cycles
+* Version 11.0
+* 12/07/06 RHA DEV00017700 Set #SPEED=NEXTSPEED if SPEED unset
+* 25/07/06 RHA DEV00016799 Initialise tool position at toolchange and index
+* 26/07/06 RHA			   Correct NEXTZMOVE setting for reversed axes
+* 28/07/06 RHA DEV00017797 New MM and MT line switches
+* 01/08/06 RHA DEV00017818 Hole cycle clearance and level options
+* 01/08/06 RHA DEV00016703 Only process speed and gears if there is a change
+* 01/08/06 RHA DEV00017490 Make spindle start warning optional
+* 04/08/06 RHA DEV00017771 Number of turns token for ISO, trap and fix exact 360deg helix count
+* 07/08/06 RHA DEV00012241 Add High speed and coolant controls to Tool Change
+* 09/08/06 RHA DEV00017902 Correct thread mill helix for TNC
+* 11/08/06 RHA DEV00012241 Remove diagnostic line, Correct thread mill for reversed axes
+* 13/09/06 RHA DEV00018171 Correct initialisation of tool position after datum shift
+* Version 11.5
+* 25/09/06 RHA DEV00017909 Expand trace options
+* 12/10/06 RHA DEV00012692 Correct drill sub output for 1 location
+* 13/10/06 RHA DEV00018390 PT_CONVERT_COORDS
+* 17/10/06 RHA DEV00018409 Fix Duplicate angle reversal by Rapid to ToolChange
+* 03/11/06 RHA DEV00018471 ToolChange HPCC call should only be via a token
+* 24/11/06 RHA DEV00017338 Move CPLNAME to a template variable
+* 05/12/06 RHA DEV00018738 Fix CRC calls to cancel on arc
+* 08/12/06 RHA DEV00018738 Correct calls in circle and intialise variables
+* 19/12/06 RHA DEV00018593 Set #PLANEGCODE in Thread Milling
+* 21/12/06 RHA DEV00018869 Remove diagnostic code
+* 02/01/07 RHA DEV00017909 Remove old thread mill array dump
+* 25/01/07 RHA DEV00019078 Correct datum over ride setting
+* 15/02/07 RHA DEV00017338 Correction to CPL name in Rapid after TC
+* Version 11.75
+* 19/03/07 RHA DEV00019554 Correct precision of XCP YCPL ZCPL in use
+* 13/04/07 RHA DEV00019730 Correct wrapped drill cycle approach move
+* 30/04/07 RHA             Post processing speed up
+* 21/05/07 RHA DEV00020096 Implement Maintain Index Option at ToolChange
+* 24/05/07 RHA DEV00019981 Orthogonal plane cycle controls
+* 29/05/07 RHA DEV00019987 Reverse coordinate after array axis swap
+* 30/05/07 RHA DEV00019987 Limit fix to 5 axis rotary
+* 01/06/07 RHA DEV00019987 Leave array axis swap but remove sign reversal.
+* 01/06/07 RHA DEV00020208 Fix Index after TC (Head Head)
+* Version 12.00
+* 23/07/07 RHA DEV00020524 Avoid spurious CRC warnings
+* 24/07/07 RHA DEV00020524 Comp Fix, Plan B. Set $COMPOUT only when state changed
+* 03/08/07 RHA DEV00020524 Fix comp problem in CIRCLE procedure
+* 10/08/07 RHA DEV00020285 Add new ISO Datum Shift Tokens
+* 28/08/07 RHA DEV00020760 DEV00020742 DEV00019720 Fix approach coordinates
+* 29/08/07 RHA DEV00020760 DEV00020742 DEV00019720 Fix axis reversals in toolchange
+* 27/09/07 RHA DEV00021172 Correct datum output when index not maintained
+* Version 12.25
+* 18/10/07 RHA DEV00021382 Correct use of #TMP, Use #COMPTEMP
+* 07/11/07 RHA DEV00019365 Additional debug output for holes and thread mill
+* 03/12/07 RHA DEV00021534 Enable longhand tapping
+* 17/12/07 RHA DEV00021869 Correct Rapid after TC for longhand hole cycles
+* Version 12.5
+* 21/12/07 RHA DEV00021292 ASIN fails on taper thread
+* 24/12/07 RHA DEV00021372 Trap hole cycle level change
+* 17/01/08 RHA DEV00022021 Incremental option for Z Clear
+* 18/01/08 RHA DEV00021841, DEV00021908 New optional warnings
+* 18/02/08 RHA DEV00022063 Fix single helix and tidy call structure
+* 19/03/08 RHA DEV00022891 Allow concecutive coincident indexes to CPL
+* Version 2009.1
+* 07/04/08 RHA DEV00013774 Correct arc centres and streamline arc calculations
+* 14/04/08 RHA DEV00023113 Feed after ToolChange code constructor added
+* 14/04/08 RHA DEV00018979 Correct BNUM reset
+* 22/04/08 RHA DEV00022820 Correct angle at toolchange logic PMACRO-15
+* 22/04/08 RHA DEV00022820 Set hold values to #FUNNY in PMACRO-15
+* 01/05/08 RHA DEV00023246 Adjust rotary initialisation according to machine type
+* 07/05/08 RHA DEV00023285 Set angle output vars at toolchange
+* 08/05/08 RHA DEV00020490 Add new hole depth option. Incremental from Retract
+* 22/07/08 RHA DEV00024069 Correction to spindle reverse with coolant
+* 06/08/08 RHA DEV00024310 Back bore and face in milling
+* 11/08/08 RHA DEV00024364 Implement helical hole cycles
+* 20/08/08 RHA DEV00024474 Add Feed Type setting to toolchange
+* 26/08/08 GST DEV00023989 Helical approach number of turns corrected
+* 26/08/08 GST DEV00023205 Correct TLO application if NOMOTION
+* 28/08/08 GST DEV00024586 Apply TLO correction to XY arcs
+* 28/08/08 RHA DEV00023797 Add tool token and remove chamfer angle restriction
+* 08/09/08 RHA DEV00024603 Correct angle setting for Rapid after ToolChange pt_output_rapid
+* 11/09/08 RHA DEV00024584 ASIN error on helical profile
+* 18/09/08 RHA DEV00024886 Call feed type code constructor from toolchange
+* Version 2009.2
+* 24/10/08 RHA DEV00025195 Plunge to cycle clearance if needed
+* 24/10/08 RHA DEV00025000 Allow Rapid after tool change with null move
+* 29/10/08 RHA DEV00025195 Suppress call if already at clearance
+* 31/10/08 RHA DEV00025264 Do not reset centre if adjustment fails
+* 05/11/08 RHA DEV00025093 Correct spindle with coolant in tapping cycle
+* 16/02/09 RHA DEV00026148 Correct first hole location in rotary mode
+* 17/02/09 RHA             Correct 3 Axis compilation
+* 06/03/09 RHA DEV00026198 Use Job data instead of ASK questions
+* 09/03/09 RHA DEV00026198 Fix PROGDESCR with PARTNAME default
+* 09/03/09 RHA DEV00026183 Fix radius value in adjust arc centre procedure
+* 10/03/09 RHA DEV00026183 Remove rounding of comparitive radius
+* 13/03/09 RHA DEV00025238 #TMPCLEAR is wrongly handled in PT_ZCLEAR (Threadmill)
+* 13/03/09 RHA DEV00026452 Changes for 3D Z with TLO application
+* 18/03/09 RHA DEV00026539 3D approach for hole cycles
+* 19/03/09 RHA DEV00026198 Correct PROGID default
+* 20/03/09 RHA DEV00026198 Change ASK default behaviour, Programmer & Version
+* 02/04/09 RHA DEV00026928 Correct subroutine processing for hole cycles
+* 03/04/09 RHA DEV00026928 Correction to subcall logic, for non-hole calls
+* Version 2010.1
+* 27/05/09 RHA DEV00022849 Lookahead for Rapid move speed set
+* 11/06/09 RHA WI33874 Fix Lookahead, use SPEED if NEXTSPEED=#FUNNY
+* 15/06/09 RHA WI33580 Move M89/99 setting to TNC.cgi and fix
+* 16/06/09 RHA WI32294 Siemens - allow 0 datum increment
+* 08/07/09 RHA WI34873 New Thread Mill - Restructure existing canned cycle
+* 09/07/09 RHA WI34873 New Thread Mill - Add new code options
+* 14/07/09 RHA WI34873 New Thread Mill - Add new macro and processing
+* 16/07/09 RHA WI34873 Remove temporary diagnostics
+* 17/07/09 RHA WI34873 New Thread Mill - Use Hole cycle point processing
+* 22/07/09 RHA WI34814 Correct Z lift when emulating multi-level cycles pt_hole_cycles
+* 23/07/09 RHA WI35048 Z lift - adjust for last hole and for subroutines
+* 23/07/09 RHA WI34873 New Thread Mill More variables and cycle parameters
+* 27/07/09 RHA WI31681 Axis Reversals
+* 29/07/09 RHA WI34873 Add signed absolute option for depth
+* 05/08/09 RHA WI34754 Make call to Feed Type code constructor optional in toolchange
+* 07/08/09 RHA WI24873 Fix thread depth sign options
+* 10/08/09 RHA WI31681 Siemens thread mill, remove diagnostic
+* 10/08/09 RHA WI31163 Output angles for rotary rotate, Fix nomotion check
+* 12/08/09 RHA WI34580 Fix subroutines when #CYCLEPOINTS=3
+* 13/08/09 RHA WI34873 Adjust for changed system variables
+* 18/08/09 RHA W35155 Adjust arc feeds only if not adjusted by cycle (Thread Mill)
+* 19/08/09 RHA W35537 Add Lead and Starts tokens for thread mill
+* 20/08/09 RHA W35048 Warn if multi-level holes use subroutines
+* 20/08/09 RHA W35450 Add tokens for coordinate rotation to sub call
+* 27/08/09 RHA W34873 Move #THREADLEAD calculation up in CANNED675
+* 28/08/09 RHA W34873 Fix to above change. Reset #THREADLEAD with sign
+* 07/09/09 RHA W35780 Multi depth cycle should be detected using ZLEVEL variable
+* 14/09/09 RHA W35898 Correct angle setting for planar rotate - PMACRO-33
+* 15/09/09 RHA W35307 Set values for tool angle (angled head) tokens etc
+* 17/09/09 RHA W35307 System variables renamed HEADANGLE MOUNTANGLE
+* 23/09/09 RHA W35563 Thread mill bottom to top formatting & suppress points call
+* 24/09/09 RHA W36102 MCALL cycle definitions for Macro37 thread milling
+* 24/09/09 RHA W35563 Force canned cycle every time for thread mill
+* 01/10/09 RHA W35498 Use LEADFEED for thread mill approach (675 canned cycle)
+* Version 2010.1 SP1
+* 13/10/09 RHA W35934 Suppress spindle stop warning at Toolchange
+* 23/10/09 RHA W36513 Ask only one time for same variable when not set
+* 30/10/09 RHA W35934 Detect spindle stop in sequence
+* Version 2010.2
+* 13/11/09 RHA W36665 Correct action of planar rotate on rotary angles
+* 13/11/09 RHA W36755 Add #MOVE to Mode Flags trace
+* 18/11/09 RHA W31914 COMPGCODE suppressed on Z only moves
+* 20/11/09 RHA W36665 Correct #Move setting for planar rotate NOMOTION
+* 27/11/09 RHA W31718 Trap invalid LEFTRIGHT values in arc feed adjustment
+* 08/12/09 RHA W35163 Use XYFEED for Helical hole cycles
+* 11/12/09 RHA W36903 Add "Ask Once" to the NC Stlyes > Interactive Startup options
+* 04/01/10 RHA W32567 Implement G28 Moves to Home etc. ISO Template
+* 15/01/10 RHA W37297 Add Single Shot option for Exact Stop
+* 22/01/10 RHA W37441 Hole locations for angled head - Restructure array reading
+* 25/01/10 RHA W37441 Hole locations for angled head
+* 02/03/10 RHA W37976 Correct #nKEEP settings in P-RESET
+* 11/03/10 RHA W38137 Output angled head diagnostics from Toolchange only if modes trace is on.
+* 11/03/10 RHA W38139 Angled head, hole cycle approach unsafe in machine coordinates
+* 17/03/10 RHA W38176 Allow for angled heads in PT_COMPENSATE_TLO
+* 19/03/10 RHA W38304 Correct reversal of move to ZCLEAR in PT_GET_HOLE_POSITION
+* 19/03/10 RHA W38305 Correct approach to hole cycles when 3D is off
+* 25/03/10 RHA W38435 Old thread mill canned to set KEEP values
+* 26/03/10 RHA W38341 Remove #ZMOVE setting for hole cycles in PT_OUTPUT_RAPID
+* 29/03/10 RHA W38474 Use CPLPLANE>4 instead of CPLPLANE=5, allow for invalid values.
+* 30/03/10 RHA W38341 Allow for traditional fixed XY then Z move after TC
+* 31/03/10 RHA W38513 Activate canned cycle switches for orthogonal planes
+* 01/04/10 RHA W38341 Allow for traditional fixed XY then Z move after TC
+* 06/04/10 RHA W38513 Correct switch use for 3AX with angled head
+* 06/04/10 RHA W38474 Reset to use CPLPLANE=5, underlying EC problem has been fixed.
+* 08/04/10 RHA W38633 Call PT_COMPENSATE_TLO after NOMOTION in PMACRO-15
+* 08/04/10 RHA W38619 Allow MCoords hole array analysis for head-head without angled attachment
+* 09/04/10 RHA W38607 Remove %IF #3DAFTERTC=1 @CALLRAP from PT_HOLE_CYCLES
+* 13/04/10 RHA W38640 Hole parameters adjusted for TLO and Angled Head
+* 14/04/10 RHA W38607 Use %IF #3DAFTERTC=1 @CALLRAP in PT_HOLE_CYCLES if after TC
+* 16/04/10 RHA W38640 Correct sign of hole parameter offset
+* 04/05/10 RHA W39031 Correct TLO offsetting for gantry machine with machine coordinate output
+* 11/05/10 RHA W39137 Set #HOLEOFFSET in a procedure and call from Move Angular
+* 14/05/10 RHA W39206 PT_CONVERT_COORDS needs to cater for HeadTable combinations
+* Version 2011.1
+* 28/05/10 RHA W39270 Suppress spindle warning on back bore approach/retract
+* 02/06/10 RHA W38680 Add thread mill and probe to SET_TOOL_TYPE
+* 07/06/10 RHA W39270 Reset SPINWARN at Toolchange
+* 02/07/10 RHA W37828 Fix arc centre adjustment for reversed axes
+* 15/07/10 RHA W39785 Implement tap type setting at toolchange
+* 28/07/10 RHA W40156 Allow peck subroutines in machine coordinate output
+* 30/07/10 RHA W38672 Correction to coordinate rounding & new procedure
+* 04/08/10 RHA W40156 Allow for unset system vars in Peck
+* 06/08/10 RHA W40156 Fix when in CPL Coords
+* 06/08/10 RHA W40290 Correction for CPLPLANE=6 condition
+* 10/08/10 RHA W40156 Remove changes in PT_OUTPUT_SUBSTART
+* 12/08/10 RHA W40290 Correct loop in PMACRO-35
+* 16/08/10 RHA W39553 Control allowable chamfer for helical hole cycle
+* 16/08/10 RHA W38928 Allow both rotary axes on hole cycle approach
+* 16/09/10 RHA W31859 Improve use of hole clearance on approach
+* 17/09/10 RHA W31859 Don't change approach after tool change
+* 20/09/10 RHA W31859 Fix for machine axes. Use #PREVIOUSHEIGHT instead of #TEMP
+* 21/09/10 RHA W40897 Implement correct processing for rotary drill in MC coords
+* 27/09/10 RHA W39102 Extend rotary hole processing for angled head and machine coordinates
+* 29/09/10 RHA W40981 Correct G92 output for Incremental datum shift
+* 11/10/10 RHA W39884 Fix DIRECTION corruption by GETCPL
+* 13/10/10 RHA W40981 Correct Absolute datum regressions
+* 13/10/10 RHA W40981 Change for absolute converted to shift
+* 14/10/10 RHA W40981 Change for same datum, different offset
+* 14/10/10 RHA W40981 Fix Head-Head (no maintain index) problem
+* Version 2011.2
+* 22/10/10 RHA W32074 Restructure Datum Shift and Index handling
+* 25/10/10 RHA W34915 Allow Datum Override on first tool
+* 26/10/10 RHA W41396 Use MAXFEED for Rapid conversion
+* 28/10/10 RHA W32074 Fix longhand radial hole approach regression
+*                     Fix #XSHIFT etc. remove redundant variables
+* 29/10/10 RHA W32074 Axis reversals, #XSHIFT etc.
+* 29/10/10 RHA W38135 Alternative incremental datum base
+* 01/11/10 RHA W41315 Remove Update_Offset_Registers from absolute datum shift
+* 01/11/10 RHA W38135 Alternative incremental datum base
+* 02/11/10 RHA W32074 Update temporay annotation in Select_Work_Datums procedure
+* 11/11/10 RHA W41606 Avoid Spindle warning for probe tools
+* 10/12/10 RHA W33515 Fix incremental angles for hole cycles
+* 10/12/10 RHA W38043 Mill TNC and others - support feed type
+* 13/12/10 RHA W33515 Fix for hole cycle in rotary rotate
+* 10/12/10 RHA W38043 Fix for thread mill and improve efficiency
+* 14/12/10 RHA W33291 Fix for incremental angles
+* 16/12/10 RHA W41997 Implement peck tapping
+* 23/12/10 RHA W41738 New option - Always use IJK with 360deg arcs
+* 11/01/11 RHA W42393 New Option - Control for negative radius when angle>180
+* 17/01/11 RHA W30504 Incremental angle fixes
+* 18/01/11 RHA W41711 Protect DWELL from 0/#FUNNY switching
+* 18/01/11 RHA W42408 Angle direction code fix
+* 18/01/11 RHA W42463 Suppress direction if no rotation
+* 19/11/11 RHA W38043 Corrections & add thread mill cycle option
+* 21/01/11 RHA W41711 Protect USERVAR1, PMACRO-29
+* 25/01/11 RHA W42393 Signed radius for single turn helix
+* 11/02/11 RHA W42866 Correct inc angles in 5 axis approach and subcall
+* 16/02/11 RHA W38043 More fixes for thread mill
+* 28/02/11 RHA W43151 Tapping reverse with combined coolant codes
+* 28/02/11 RHA W38043 Fix for Arcs
+* 04/03/11 RHA W43249 Fix absolute datum shift
+* 26/04/11 RHA W44169 Tapping feed conversion
+* Version 2011.2.2
+* 17/05/11 RHA W43899 Fix 3D approach switching for holes (CPL Coords)
+* 17/05/11 RHA W43524 Fix TNC arc centre correction (Non G17)
+* Version 2012.1
+* 02/06/11 RHA W43821 Improve efficiency of arcs and coordinate rounding
+* 14/06/11 RHA W44874 Use NEXTSPEED for rapids from TRANSLATE
+* 15/06/11 RHA W44874 Re-initialise Feed/Speed in TRANSLATE
+* 16/06/11 RHA W44058 Force #PLANEGCODE at start of subroutine
+* 21/06/11 RHA W42241 Selective threadmill canned cycles
+* 28/07/11 RHA W39982 Trap null arc moves
+* 28/07/11 RHA W43985 Implement feedrate multiplier
+* 03/08/11 RHA W42241 Improve helical taper warning for 675 cycle
+* 10/08/11 RHA W42871 Make use of NEXTSPEED optional
+* 10/08/11 RHA W43985 Fix converted FPR value
+* 11/08/11 RHA W42871 Make use of NEXTSPEED optional - Improve pt_speed_set
+* 31/08/11 RHA W45704 Fix CODECON_TAPPING-CYCLE calls, make Siemens compatible
+* 05/09/11 RHA W45704 Fix multilevel retract for thread mill
+* Version 2012.2
+* 02/11/11 RHA W45241 Improve processing times
+* 20/12/11 RHA W47496 Allow G93 through PT_CONTROL_FEEDTYPE
+* 17/01/12 RHA W45710 Force Index token on first toolchange
+* 15/02/12 RHA W47500 Implement auxiliary Z axes
+* 22/02/12 RHA W48740 calculate number of helical turns in G18/19 modes
+* 22/02/12 RHA W48595 Make PLANEGCODE more robust
+* 22/02/12 RHA W49150 Fix index after head-head toolchange
+* 15/03/12 RHA W49473 Option for W (quill) move to be tool tip
+* 15/03/12 RHA W49072 Add quill Function for drilling code constructors.
+* 20/03/12 RHA W49072 More Quill tokens for drilling code constructors.
+* 28/03/12 RHA W49150 Fix index after head-head toolchange
+* 20/03/12 RHA W49072 Fix #AUXZDEPTH
+* 03/04/12 RHA W49473 Fix Z2MOVE token, use #ZHOLD for unchanged value
+* 04/04/12 RHA W49150 Set Angular hold values from rotary drilling
+* 11/04/12 RHA W49150 Set Head Angle and Hold values at ToolChange
+* 12/04/12 RHA W49745 Quill movements for canned hole cycle
+* 17/04/12 RHA W49150 Initialise Head Angle output at ToolChange
+* 18/04/12 RHA W49745 Quill movements for canned hole cycle
+* 19/04/12 RHA W50157 Head Angle output at First ToolChange
+* Version 2013.1
+* 31/05/12 RHA W48878 Phantom warnings from Subroutines
+* 14/06/12 RHA W50832 Set rotary direction of hole cycles to Shortest
+* 29/08/12 RHA W50032 Avoid CG crash when #DATUMMAX=#FUNNY
+* 03/10/12 RHA W31018 Correct CPL tool tip option for Rapid to Tool Change
+* 26/10/12 RHA W53700 Correct thread mill (37) regression
+* Version 2013.2
+* 13/03/13 GST W50479 Allow output of parameters =0
+* 14/03/13 GST W51693 Round angle, pitch and zrange before use them
+* 14/03/13 GST W55888 Round angle, pitch and zrange before use them
+* 18/03/13 GST W52689 Fix THISZMOVE output for canned holes
+* 20/03/13 GST W31039 Implement new coolant system - fase 1
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation
+* 20/03/12 GST W54195 Create tokens for NEXT tool parameters
+* 20/03/13 GST W55128 Implement Rotary Axial interpolation - second batch
+* 21/03/13 GST W55128 Implement Rotary Axial interpolation - fix polar call
+* 21/03/13 GST W55128 Implement Rotary Axial interpolation - third batch
+* 21/03/13 GST W54191 Force feed for tapping - floating and rigid choice
+* 21/03/13 GST W48957 Allow WorkGCode update at toolchange for head machines
+* 22/03/13 GST W31039 Implement new coolant system - fase 2
+* 25/03/13 GST W56100 Implement Rotary Axial interpolation - hole array
+* 25/03/13 GST W50471 Allow WorkGCode override at toolchange for head machines
+* 26/03/13 GST W31039 Implement new coolant system - initialise when combined
+* 27/03/13 GST W56534 Implement new coolant system - fix auto coolant
+* 27/03/13 GST W56100 Implement Rotary Axial interpolation - hole array
+* 27/03/13 GST W55128 Implement Rotary Axial interpolation - fourth batch
+* 27/03/13 GST W55128 Implement Rotary Axial interpolation - allow arcs and helices
+* 28/03/13 GST W55128 Implement Rotary Axial interpolation - implement axis side
+* 28/03/13 GST W31039 Implement new coolant system - make autocool override optional
+* 10/04/13 GST W56644 Fix spindle stopped warnings
+* 19/04/13 GST W56100 Adjust array for holes on negative side
+* 23/04/13 GST W57364 Disable auto-coolant for Probe tools
+* 23/04/13 GST W57296 Move to Toolchange Home in rotary axial
+* 02/05/13 GST W55128 Force nocycle when forcing cartesian
+* 13/05/13 GST W57296 Remove changes
+* 23/05/13 GST W56952 Add Dwell Time to allow spindle to change speed
+* Version 2014.1
+* 18/07/13 GST W57793 Correct hold values for hole clearance on mcoords
+* 18/07/13 GST W52636 Recalculate number of turns with system variables
+* 18/07/13 GST W58113 Force rotary update after IJK_5-axis
+* 22/07/13 GST W55730 Implement rotary precision
+* 23/07/13 GST W57134 Correct [WORKREGISTER] and make [WORKGCODE] available in Index
+* 01/08/13 GST W58567 Fix rotary direction calculation for rationalised angles
+* 01/08/13 GST W59347 Radial holes must not be subjected to "Cartesian Output in Rotary Holes"
+* 07/08/13 GST W49799 Allow output of datum override in Set Work Datums
+* 09/08/13 GST W57148 Make Exact Stop codecons and codes available on TNC
+* 16/08/13 GST W59433 Add support for 3D compensation
+* 20/08/13 GST W59677 Fix hold angle for #ROTTYPE=4 calculation
+* 26/08/13 GST W43623 BackBore/Face cycle points option
+* 30/08/13 GST W59852 Add support for Dynamic Offset
+* 03/09/13 GST W59929 Fix rotary holes approach moves
+* 13/09/13 GST W59942 Fix null index detection
+* 19/09/13 GST W60303 Create Move Code for 3D_CRC on TNC
+* 14/10/13 GST W60594 Allow CRC off on rapid retracts
+* Version 2014.2
+* 26/11/13 GST W61216 Fix rotary holes with angled-head
+* 28/11/13 GST W61819 Allow mcoords in rotary axial
+* 02/12/13 GST W56100 Remove rotary axial holes calculation
+* 10/12/13 GST W62088 Fix Warn if not at Toolchange height
+* 22/01/14 GST W56100 Use new array pointers for rotary axial holes
+* 20/02/14 GST W63124 Improve array output for debug trace
+* 24/02/14 GST W62726 Implement Turning on milling
+* 26/02/14 GST W62726 Fix Turn rapid after tc and initialisation
+* 07/03/14 GST W62726 Fix Move To Tool Change / Home
+* 07/03/14 GST W62726 Add feed type for turning
+* 12/03/14 GST W62877 Temporarily fix rotary axial holes
+* 24/03/14 GST W63923 Document SW 48 and 49 retrieve swap
+* 15/04/14 GST W63129 Improve forcing of XYZ on full arcs
+* Version 2015.1
+* 07/07/14 GST W61121 Implement Maximum Linear Separation
+* 08/07/14 GST W64453 Fix Hole cycle unset variables
+* 16/07/14 GST W65593 Fix angles at RAT
+* 18/07/14 GST W64177 Use system angular direction when available
+* 22/07/14 GST W65032 Fix RAT to respect clearance
+* 24/07/14 GST W65032 Exclude old thread mill from RAT exceptions
+* 25/07/14 GST W66456 Exclude angled heads from reloading current CPL
+* 31/07/14 GST W65629 Fix direction assignment
+* 31/07/14 GST W66427 Fix angular data after Move Angular
+* 31/07/14 GST W62726 Fix machine mode codes
+* 06/08/14 GST W62726 Fix RAT for non-axial turning
+* 19/08/14 GST W62877 Allow new rotary array in mill+turn
+* 19/08/14 GST W64059 Add Force XYZ to 3x posts
+* 21/08/14 GST W65032 Fix RAT to respect clearance - exclude null move
+* 27/08/14 GST W62726 Fix initialisation for turning on YZ
+* 11/09/14 GST W61121 Disable Maximum Linear Separation
+* 18/09/14 GST W78273 Fix Hole canned approach regression
+* 14/10/14 GST W79061 Fix rapid approach if helix follows
+* Version 2015.2
+* 18/12/14 GST W79570 Fix Canned/Longhand for ToM drilling
+* 09/01/15 GST W79526 Fix initial DIR hold
+* 13/01/15 GST W79524 Fix for nutated rotary moves before turning
+* 13/01/15 GST W67109 Update nSUB tokens for toolchange
+* 05/02/15 GST W80347 Implement support for Simultaneous indexing
+* 10/02/15 GST W81600 Implement Program Stop on Move to Home/TC
+* 02/03/15 GST W79570 Fix Canned/Longhand for ToM drilling
+* Version 2016.1
+* 18/06/15 GST ECAM-1158 Fix lift move on rotary axial holes
+* 08/07/15 GST ECAM-1560 Fix MTM thread pitch
+* 10/07/15 GST ECAM-1524 Correct incremantal axial rotary holes
+* 28/07/15 GST ECAM-2343 Implement Angle at Toolchange
+* 25/08/15 GST ECAM-127 Bypass maintain index on turn tools
+*
+***************************************************************************
+*							*******************
+*                         Initialisation procedures
+*							********************
+* Auxiliary axes
+* ASK variables
+*	Initialisation system and user defined variables
+* Axis Reversal Multipliers
+* Automatic Datum Setting
+*
+*	Retrieve from MM & MT lines
+**
+* See W63923
+* MM_48 retrieves switch 49 from the MM line
+* If switch 48 is needed we must make it into MM_49
+* Coolant code output
+* 3D compensation
+* Subroutine numbering
+* Block numbers
+*PRECISION=#INCR-(#INCR/100)
+* Head operation mode variables
+* Run-time questions ask once
+********************************************************************************************
+* Select abs/inc at post run time
+*  Note  #incrxyz is current abs/inc setting
+*        #incrxyzhold is main program setting
+*        #incrsubs is subroutine setting
+********************************************************************************************
+* Called by all START macros to set initial position etc.
+* Current CPL output values
+* %CALL=PT_SET_PRECISION  might need functionality here
+* Machine Datum output values
+* %CALL=PT_SET_PRECISION  might need functionality here
+* Reset HOLD with reversals if not incremental
+* Set CPL offset for moves to Home and TC
+* Baseline for incremental datum
+********************************************************************************************
+* Canned cycle capability checks, Longhand if canned cycle not available
+*Drill
+* No chamfer allowed
+* Check tool orientation conditions
+* Note, checks included in 3ax for angled head use.
+* <CPLPLANE=[CPLPLANE=13] MCOORD=[MCOORD=13] #ORTHCYCLES=[#ORTHCYCLES=13]>
+* DB12120  Rotary Rotate outputs cycle and expanded equivalent. Suppress cycle to prevent duplicate moves
+* Entry feed set - longhand output only
+********************************************************************************************
+*							*******************
+*                         Macro support procedures
+*							********************
+*
+* <DRILL-CYCLE Peck [DEPTH=0]   Dwell [DWELL=0]>
+*  %IF #EXPANDG82=1 %THEN %NOCYCLE
+* Counter bore cycle
+* Peck Cycle
+* Drill Cycle
+**************************************************************************
+**************************************************************************
+**************************************************************************
+**************************************************************************
+* Back Face
+**************************************************************************
+**************************************************************************
+*
+* Check and reset direction
+* Right hand threads
+* Left hand threads
+*
+* %IF #TAPTYPE=2 %THEN $CYCLETYPE=RIGIDTAPPING
+* #DEPTH=#DEPTH*#FUNNY
+**************************************************************************
+* Set CRC output control for profile lead in/out
+**************************************************************************
+*  %IF #G55<>0 %THEN $WARNING="Warning - Workshift in Toolchange not valid with Datum Shift - Option ignored":%CALL=CODECON_WARNING:%GOTO @NOTOOL_WORKSHIFT
+*
+* Spindle controls - swapped 22/03
+* ToolChange Coolant control - swapped 22/03
+* Through tool coolant
+* Feedtype
+* Load next tool parameters
+* Position not move, therefore never incremental
+* Set Hole Depth Offset 11/05/10
+* Update for toolchange datum tokens - 1301
+* Removed provisionally for W34915
+* IF TEMPLATE=MPLMILL^4AXMILL^5AXMILL
+* %CALL=PT_ABS_DATUM_RECALL
+* ENDIF
+* Check correct position
+* No Rapid_to_ToolChange call
+* Check Z position only, allow for axis reversal
+* Output initial position after TC and Index only
+* process new coolant options
+* but still consider old range (q205) based on some rules
+* ***********************************
+* Q205  	|New Coolant |Result output
+* OFF			 OFF			    = OFF
+* FLOOD		 FLOOD
+* MIST		 MIST
+* AIR			 AIR
+* ON/FLOOD OFF			    = FLOOD
+* FLOOD		 FLOOD
+* MIST		 MIST
+* AIR			 AIR
+* MIST		 OFF  			  = MIST
+* FLOOD		 MIST
+* MIST		 MIST
+* AIR			 AIR
+* ouput Air M-code
+* if new coolant is "air" output will always be "air"
+* off coolant, but check q205
+* flood coolant, but check q205
+* ouput Off M-code
+* AutoCoolant
+* ouput Mist M-code
+* ouput Flood M-code
+* Load next tool parameters and reload current tool at the end
+* Always reload current tool before leaving
+**************************************************************************
+*	Cutter compensation will
+*	1.	Only be active during feedrate moves - not rapid
+*	2.	Will not be active during a Z move.  (NOTE! G17=> Z/G18 => Y/G19 => X)
+*	Only Feed Code Constructor has Cutter comp Tokens available.
+*
+*	NOTE! All output is processed is produced from a cut move : feed, clw, cclw
+*
+*	Subfunct 1=off, 2=left, 3=right
+* #WarnCRC = 1  CRC Warn if Used
+* #WARNCRC90 = 1  CRC warn if not 90
+* #CRCONZ2   =1  Warn if applied with Z move
+* #CRCONZ1   =1  Warn if removed with Z move
+*
+*		Register number - If Uservar67 set then use else determine dependant on #AUTOREG
+*
+*
+*		If mirror is active then need to reverse cutter comp
+*
+*	Hold original settings
+**************************************************************************
+* <*Move [XMOVE=0] [YMOVE=1] [Zmove=2] >
+* <*Inc  [XINC=0] [YINC=1] [ZINC=2] >
+* <*Sub  [XSUB=0] [YSUB=1] [ZSUB=2] >
+* <*Hold [#XHOLD=0] [#YHOLD=1] [#ZHOLD=2] >
+* Note: This routine now uses #XTSUB etc to avoid corruption of #XSUB
+* First pass only - Initialise start point
+* First pass through translate is second call of subroutine.
+*
+*	Rapid to position of next move
+* Incremental Subroutines
+* Absolute approach
+* prevent output of null effect G92 block
+*	Apply translation - G92 will reset registers
+*	Call Subroutine
+**************************************************************************
+* Set Angle2 correctly
+* Reverse direction of 0 -> 360 if required
+* Reset within 0-360
+* Accommodate -0 by setting zero angle to 0.0000001 and calculating sign
+* This will truncate to 0 on output with correct +/- sign
+**************************************************************************
+*
+* Retract first if requested
+*
+*	Rapid to Rplane
+*
+* Move 2 axes to start point
+*
+*
+* Plunge to start point
+* NB Only the active INC value is set for PECK
+*
+*
+**************************************************************************
+************  Diagnostic printout
+************
+* Full canned cycle USERVAR8=1. #THREADCANNED=2
+* Canned cycle preparation
+* Canned cycle output
+* True canned cycle only
+**************************************************************************
+*If no comp requested ensure output flag is true
+* Check for helical interpolation
+* %IF PATHTRACE=1 %THEN %NOCYCLE
+*Check for array data.
+* #TMP=XPOINT(#LOOP):#TMP1=YPOINT(#LOOP):#TMP2=RADIUS(#LOOP)
+* <Loop [#LOOP=0] . [#TMP=0] [#TMP1=1] [#TMP2=2] >
+*look for lift out on NEXT move
+* <* Loop [#LOOP=0] Next [#NEXTLOOP=0]>
+* <Lift Next From [#TMP1=2] To [#TMP2=2]>
+* Look for last leg and cancel compensation
+**************************************************************************
+* Through Tool Coolant
+* Adjust tool/home position to current CPL if required
+*
+*%IF MILLMODE=1 @END
+*%IF CAXIS<>1 @END
+** Holes differ from mill - use separate flags to determine
+** if the move to tc should be rotary or planar
+*%IF #HOLECYCLE3=1 @HOLES
+** Milling
+*%IF #ROTARYCARTESIAN=1 @END
+*%GOTO @MILLING
+*@HOLES
+*%IF #ROTARYCARTESIANHOLE=1 @END
+*@MILLING
+*%IF ACTIVELINEARAXIS<1 @END
+*%IF ACTIVELINEARAXIS>2 @END
+*#TMP=XMOVE*XMOVE : #TMP1=YMOVE*YMOVE
+*#TMP=#TMP+#TMP1 : #TMP1=SQR(#TMP)
+*%IF ACTIVELINEARAXIS=1 %THEN #XMOVE=#TMP1*ACTIVELINEARAXISSIDE : #YMOVE=0 %ELSE #XMOVE=0 : #YMOVE=#TMP1*ACTIVELINEARAXISSIDE
+*
+**************************************************************************
+* Through Tool Coolant
+* Adjust tool/home position to current CPL if required
+*
+*%IF MILLMODE=1 @CONTINUE
+*%IF CAXIS<>1 @CONTINUE
+** Holes differ from mill - use separate flags to determine
+** if the move to tc should be rotary or planar
+*%IF #HOLECYCLE3=1 @HOLES
+** Milling
+*%IF #ROTARYCARTESIAN=1 @CONTINUE
+*%GOTO @MILLING
+*@HOLES
+*%IF #ROTARYCARTESIANHOLE=1 @CONTINUE
+*@MILLING
+*%IF ACTIVELINEARAXIS<1 @CONTINUE
+*%IF ACTIVELINEARAXIS>2 @CONTINUE
+*#TMP=XMOVE*XMOVE : #TMP1=YMOVE*YMOVE
+*#TMP=#TMP+#TMP1 : #TMP1=SQR(#TMP)
+*%IF ACTIVELINEARAXIS=1 %THEN #XMOVE=#TMP1*ACTIVELINEARAXISSIDE : #YMOVE=0 %ELSE #XMOVE=0 : #YMOVE=#TMP1*ACTIVELINEARAXISSIDE
+*
+**************************************************************************
+* <*Move [XMOVE=0] [YMOVE=1] [Zmove=2] >
+* <*Inc  [XINC=0] [YINC=1] [ZINC=2] >
+* <*Sub  [XSUB=0] [YSUB=1] [ZSUB=2] >
+* <*Hold [#XHOLD=0] [#YHOLD=1] [#ZHOLD=2] >
+*	Translate Reset
+* Reset is only needed if absolute subroutines have been used with G92 datum setting
+* Update stored end point (XINC etc in Reset are TOTAL increments for this level)
+*<*HOLD2 [#XHOLD=0] [#YHOLD=1] [#ZHOLD=2] >
+* Final G92 position.
+* Update Keep values
+**************************************************************************
+* Processing logic called by macro 106, Exact Stop
+* Single shot, G code set in linear move
+*	If On then G09 will be output in Feed Macro instead of FeedGcode
+* Mode setting
+* TNCs have output through M-code
+*
+**************************************************************************
+* processing non combined with mist
+* processing non combined with flood
+* processing air coolant (never combined)
+* reprocess spindle stopped + coolant
+* if at the very end coolant is 0, make it off
+* old range will be consider later on
+* May be comming from a manual toolchange
+* Reinstate auto coolant if necessary
+* Now find Gear
+* Spindle control
+* #COOLHOLD=#COOL 22/03
+* #THROHOLD=#THROUGHTOOL1 22/03
+* Reset old values if stopped
+* #COOL=#COOLHOLD 22/03
+* If we are generating speeds on a separate block
+* dirhold must only be updated upon them
+* otherwise update here
+**************************************************************************
+* Helix inaccurate for Taper thread
+* Suppress CRC calls until Subfunct is set
+* Canned cycle requested
+* Check thread attributes
+* Check tool orientation conditions
+**************************************************************************
+*							*******************
+*							  Debug Trace Procedures
+*							*******************
+*
+* Called from token TOOLTYPE
+*							*******************
+*							  Program Runtime Questions
+*							*******************
+*
+* Handle User Input, Token PROGVERSION
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+*                               **********************************
+* Handle User Input, Token PROGRAMMER
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+*                               **********************************
+* Handle User Input, Token PROGDESCR
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+*                               **********************************
+* Handle User Input, Token PROGID
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+*	*****************************************
+*	*	Test Profile Lead conditions		*
+*	*****************************************
+*
+* Check for arc move
+* Thread Milling
+* #WarnCRC = 0  No warnings
+*            1  CRC Warn if Used only
+*            2  CRC warn if not 90 only
+*            3  Both above warnings
+*
+* Warn for CRC application on Z move
+* Warn for CRC cancellation on Z move
+*
+*
+*		Global output Rapids as high feedrates if #FEEDRAPIDS set to Yes - use #FEED to force re-instate of cut feed
+*
+* Changed 26/03 dont set zmove here (mc coords etc)
+* Don't use NEXTZ if FEED move follows
+*
+* If the first move after is in xy only then z should be next z
+* %IF #MACRO=37 @NOSET
+* Certain occasions in planar mill create a null move after index
+* this attempts to skip it
+*
+* Keep nKEEP for possible reset
+* Check if milling RAT is Z only
+* On which nextzmove usage is unwanted
+* Force current Z
+* And redo nomotion with reset nKEEP
+* Allow compensation Off on rapid retracts
+* Dependent on machine parameter
+* Keep current Z for THIZMOVE token
+*Set CPL Parameters
+* 28/10/10
+* %IF MILLMODE=0 @NOCPL
+* %IF #ROTROTFLAG=1 @NOCPL
+* %IF FIVEAXIS=1 @NOCPL
+* %GETCPL=#CURRENTCPL
+* Output G43 on first Z
+* Z Component in move
+*
+*
+*Look ahead
+* #LOOKAHEAD=2 Last Rapid
+*
+*
+*
+*
+* procedure to set and check spindle speed
+* Note following IFs ordered for efficient processing
+* %IF #SPEED=#SPEEDHOLD @END
+* %IF #SPEED=#SPEEDHOLD @END
+* %IF #SPEED=#SPEEDHOLD @END
+* %IF #SPEED=#SPEEDHOLD @END
+* %IF #SPEED=#SPEEDHOLD @END
+* %IF #SPEED=#SPEEDHOLD @END
+*
+*
+* Fix for thread mill lead out
+* Comp On
+* Comp Off
+* Fix for thread mill lead out, Thread mill always sets SUBFUNCT to 1
+* Disabled indefinitely - see W61121.
+* %IF #MACRO<>2 @NOTFEED
+* %IF #4002ACTIVE=1 %THEN %CALL=PT_BREAK_MOVE
+* @NOTFEED
+* Checks for CRC
+* W31914 DCODE always suppressed. Now GCODE is also suppressed
+* This could have an NCStyle switch but is it needed?
+*	Output Feed move
+* Output G43 on first Z
+* Z Component in move
+*	Cancel cutter compensation via CodeCon_cancel-cutter-comp
+*	Code Constructor must be empty if output is with move otherwise blank block will be produced
+*
+* Handles cutter compensation in all situations
+*  #COMPON signals the state requested by the cycle
+*  Subfunct signals state for this move
+*  $COMPOUTPUT signals whether it has been output
+*****************************
+*	Profile Cycle			*
+*****************************
+* IF SUBFUNCT=0 @END
+*********************************************
+*	Handles apply compensation in all cases	*
+*********************************************
+*	Retrieve original compensation Gcode
+*	Retrieve current compensation Dcode (register)
+*************************************************
+*	Handles cancel compensation in all cases	*
+*************************************************
+*	Set Cancel GCode
+*		Output is from motion procedure since is either with or after move
+* Call codecon for machines needing separate G40 block
+*
+*	Reverse G41/G42 if processing mirror image longhand
+*
+*	After Mirror, Compensation may be cancelled due to final Rapid.  Need to retrieve last
+*	active Comp GCode.
+*	reverse G41/G42 is processing mirror image
+*
+* This procedure is to trap variables which when formatted are output as -0
+* Suppress COMPDCODE if no COMPGCODE
+* Suppress too small moves in single quad case only
+*	Radial Rotary Arcs output via Procedure=Radial_circle
+*	Process planar arc
+*
+*
+* Reset CRC Register
+* Suppress COMPDCODE if no COMPGCODE
+* Suppress too small moves in single quad case only
+*	Radial Rotary Arcs output via Procedure=Radial_circle
+*	Process planar arc
+*
+*
+* Reset CRC Register
+* Set flag for 360 degree arc
+* Fluctuate angle around angular precision as well
+* Adjust Feedrate if required
+*
+* Check for null move
+*
+* Setvar^#USERADS^Use Radius: 0 Never, 1 When Possible, 2 When Possible (XY), 3 Always, 4 Always except 360
+* Use rads if XY plane only
+* Check CRC lead conditions
+* Lead Out
+* Lead in
+* Set plane G code
+* <INCANGLE=[INCANGLE=13]>
+* < Set Centre>
+* Check for full circle (0 or 360)
+* <SETRAD>
+* Set Radius Sign & precision
+*
+* Round angle
+*
+* Radius bulge check
+* <Set IJK>
+* <OUTPUT>
+* Check centre accuracy and correct
+* XYPLANE is set as 0, 1 and 2 for XY, ZX and ZY respectively
+* Apply user defined axis reversals
+*
+* Helix
+* ZEND set for G17 helical arcs. G18/9 not set because of DEV00011313
+* <XYPLANE= [XYPLANE=0]>
+* Check accuracy of centre point
+* <* 1/2CHORD = [#CHORD=0] Rad [#RADIUS=0]>
+* Force IJK if calculated centre out of position
+* <******  RADIUS AXIS CENTRE ERROR [#XCENTREERROR=0]   - TRUE CENTRE [#TEMPXCENTRE=0] ROUNDED CENTRE [#XROUNDCENTRE=0]>
+*<******  RADIUS AXIS CENTRE ERROR [#YCENTREERROR=1]   - TRUE CENTRE [#TEMPYCENTRE=1] ROUNDED CENTRE [#YROUNDCENTRE=1]>
+***************************************************************************
+*Set up parameters and call standard procedure to
+*calculate angle bearings for TNC helical arc moves
+* DEV00012570 undo previous change to correct thread mill regression
+* #RADIUS=ABS(RADIUS)
+* Set arc parameter system variables
+* #RADIUS=ABS(#STARTRAD)
+* Multiple turns, Note that complete circle can have included angle of 0 or 360
+* Thread Mill, multiple turn arc has only 0-360 included angle, derive from pitch and Z move
+* ZSTART ZEND are not available in thread milling
+* Check for last helix full 360 degrees
+* Still needed for thread milling
+*
+************* NEED TO USE XINC.YINC IN ASIN_BEARING
+*Double check for 360 case
+* Full circle
+*	*************************************************
+*	Compensate feedrates for arcs if option selected
+*	*************************************************
+*
+*
+*  #TMP=ABS(RADIUS):%IF #TMP=TOOLRAD @END
+*	External Corners
+* Following check safer in two lines because of precision checking
+*	Internal Corners
+*	Output all Hole cycles Drill, Chipbreak, Ream and Bore as Canned Cycles - coords are held in the XYZPOINT array
+*   Called from each cycle macro and cyclsub for subroutines
+*	Code Wizard will present the cycle definition line which will be in the loop expand and thus output-if-changed
+*	will, typically, produce the XY points list previously separated into PROCEDURE=LOOPEXPAND
+*   If called from CYCLSUB, points are expanded from 2nd point (Loop=2)- cycle line is outside subroutine.
+*	This inhibits the ability to support the format whereby the cycle parameters are variables e.g. Seimens
+*
+************  Diagnostic printout
+************
+* Status Flags in use
+* Option flags in use
+* #XREVERSE,#YREVERSE,#ZREVERSE Axis reversals
+* $OUTPUTSUBS
+* #ROTARYTYPE=2  1 for
+* MILLMODE  0 for rotary, 1 for planar
+* #TOOLCHANGE =1 if previous instruction was toolchange
+* #PREPOSITION: 0 never
+* Keep move parameters
+*	Rapid to first XY position then to Zclear with Tool Length Offset.  Call procedure for single Code Constructor
+*	Could put this on a switch e.g. Call Rapid After toolchange ?
+*************************************************
+* <   Approach Moves CPLPLANE=[CPLPLANE=0] Keep [#XKEEP=0][#YKEEP=1][#ZKEEP=2]>
+*************************************************
+*
+* Lift to clearance
+* <LIFT #PREVIOUSHEIGHT=[#PREVIOUSHEIGHT=13] ZCLEAR=[ZCLEAR=13]>
+* <LIFT2 #PREVIOUSHEIGHT=[#PREVIOUSHEIGHT=13] ZCLEAR=[ZCLEAR=13]>
+*
+*
+* Approach to first point - Rapid in XY
+* CHANGE 14/04
+*
+* Not Rapid 3D, maintain clearance axis
+* Plunge to Clearance, Nomotion will prevent null move
+*************************************************
+*   DEFINE CYCLE
+*************************************************
+* Branch on $OUTPUTSUBS.  =null if PATHTRACE expansion
+* Set HOLD values for incremental calculations in subroutines
+*Include first position in expansion
+*
+* <******** LOOP START ********* #LOOP=[#LOOP=23] LAST=[LAST=23]
+*
+*************************************************
+* Processing loop for cycle point 2 onwards
+*************************************************
+*
+*Check for Zdepth/level change and respecify cycle
+*	Emulate return to Initial level : G98/G99 not supported
+*	Cancel Canned Cycle
+*	Rapid to clearance height
+*
+*
+*
+* First point or depth change
+*
+* Normal cycle point output
+*  <@LOOPEXPAND  Last=[LAST=0]  DSUB=[DRILLSUB=0] $OUTPUTSUBS=[$OUTPUTSUBS]>
+************************************************************
+*	G80 Cancel Canned Cycle
+* Cycle finishes at ZCLEAR
+* Unless it is machine coordinates
+*%IF #CUBICCOORDS=0 @JUMP5
+* For angled heads and MC coordinates
+* XY axes may be XZ or YZ on machine
+************************************************************
+* #HOLECYCLE2 is now used to suppress sub call approach moves
+* Set 0 if not using drill subroutines
+* #HOLECYCLE3 is used on move to tc/home to decide between rotary and planar
+* Is needed because holes differ from other milling cycles
+* Blank null values generally not required
+* Except for TNC
+* Detect back cycles
+* BackBore and BackFace may not require cycle points
+* Use cycle definition or dedicated codecon for points
+* Incremental variations
+* Set Hole Depth Offset 13/04/10
+* Set base positions for XSHIFT etc
+*	Remove duplicate tools from NC Code tool list
+* Initialise array for datum IDs
+* <LOOP[#LOOP=1]>
+* Loop to get SYSID from list and store in uarray in order
+* <Loop [#LOOP=0]>
+* <ID [SYSID=1]  Stype= [STYPE=1]>
+* <Pointer [#POINTER=1]>
+* Unused array element
+* <Pointer [#POINTER=1]>
+* Option to output first Datum (G54) as XYZHOME location
+* Different variable holds the datum with override, to prevent regressions
+* Reset to first datum position
+* Temporary notes - actual and proposed changes.
+************************************************************************
+* 1) #CPLHOLD is same as #CURRENTCPL. Discontinue #CPLHOLD.             DONE 22/10/10
+* 2) This procedure called by Macro=48 and by PT_INDEX_HANDLER          OK
+* 3) NOTE - Translate uses XSUB/XINC differently. Also uses #XSUB etc.
+*     Remove use of #XSUB from Translate, use new vars (#XTSUB).        Done 25/10/10
+* 3a) Always use #XSUB in datum/index
+* 4) Token sets in use                                                  OK DO NOT CHANGE
+*    XSHIFT added to TNC for baseline switching                         Done 01/11/10
+* 5) Await DSA check on XCPL etc for Datum Shift                        OK - close task
+*    Use XCPL etc for G92 in Incremental                                Done 28/10/10
+* 6) System variables                                                   INFORMATION
+* 7) Template vars #XBASE etc - set to previous XSUB                    Done 28/10/10
+* 8) Do we need Update_Offset_Registers procedure ?                     Probably not, all calls removed
+*
+************************************************************************
+* Set CPL offset for moves to Home and TC
+* Absolute datum selected
+* <#WORKGCODE=[#WORKGCODE=13] #WORKGCODEHOLD=[#WORKGCODEHOLD=13]>
+* Index - same datum, check offset
+* Now at
+* Shift By
+*
+* <Loop [#LOOP=0] [#POINTER=1]>
+* Datum not found
+* $WARNING="ERROR - SYSID for CPL not found in Datum List":%CALL=CODECON_WARNING
+* For head machines, user setting at toolchange needs to be reinstated here
+* <WDM [WORKDATUMID=0]>
+* Speed
+*
+* Incremental angles need the raw angle to calculate correctly
+*  Rot1/Rot2 are not set from drill array
+* Use new array pointer when possible
+*
+*
+*
+*	Calculate vector distance from current to next coordinate
+*   Use to determine if rapid move should be converted to feedrate move
+*
+*	XY distance
+*	3D distance i.e. incorporate Z axis
+*	If move is smaller than the specified amount then convert to a feedrate at highfeed.
+*	#TOOLSHEET	1=Output with Main NC program	2=Output as seperate file	3=None
+*******************************************************
+* <Move End Point [XMOVE=0][YMOVE=1][ZMOVE=2]>
+* <#..KEEP End Point [#XKEEP=0][#YKEEP=1][#ZKEEP=2]>
+*******************************************************
+* Check for 3D compensation
+* 3D CRC mode off
+* 3D CRC mode on only before first feed
+* Keep circle start in case needed
+*
+* Set Precision
+********************************************
+* Check move content
+*
+* Check feed type
+**********************************************
+*
+* Assign Move Code for TNC
+* Make incremental
+* Set Move for XYZ
+*******************************************************
+*<#Move= [#MOVE=0]>
+*******************************************************
+* Procedure trace is ON. Additional trace options
+* #TRTHREAD,#TRHOLE control array dumps in CY procedure
+* #TRX,#TRY,#TRZ,#TRC1,#TRC2,#TRB temporary output vars
+* Not Drill, ToolChange, Index or Thread Mill
+* Output End Points
+* Output Current Mode Settings
+* <PT_COMPENSATE_TLO [HEAD2TURRETX=0] [HEAD2TURRETY=1] [HEAD2TURRETZ=2]>
+*
+* Angled head and machine coords in use
+*
+*
+* Round Arc Centre values
+*	Determines the method of fixing arc centre
+*	NOTE!  Thread Milling uses %PROCEDURE=PT_THRD_ARC_CENTRE for simplicity
+*
+*	Setvar^#ARCTYPE
+*						Signed Start to Centre	1
+*						Signed Centre to start	2
+*						Unsigned Start / Centre	3
+*						Centre					4
+*
+* Setvar^#USERADS^Use Radius: 0 Never, 1 When Possible, 2 When Possible (XY), 3 Always, 4 Always except 360
+* #XSTART etc set in Nomotion
+* #XCENTRE etc set in PT_ARC_CENTRE
+*
+*							*********************
+*							*	Thread Milling	*
+*							*********************
+*
+*
+* Full canned cycle
+*  <BC [#BEFORECYCLE=0]>
+* Preposition after toolchange
+*
+* Next Z for first move
+* Set canned cycle variables
+*
+* <Vertical Move>
+* %IF #ZMOVE<#ZHOLD %THEN <PLUNGE> %ELSE <LIFT>
+* #BEFORECYCLE=0
+* <Not PL>
+* %IF USERVAR8=1 @NOBLOCK
+* <Rapid  XY>
+* <Feed Move XY>
+*
+*
+* Are all helical blocks required
+* Output leads & one main helical block only, Find last main helix block
+* ZMOVE = Total Movement, KVALUE = Lead
+* Suppress first main helix, uless it is also the last
+* Canned Cycles only
+* <Not First>
+* <Next [#NEXTTYPE=1]>
+* Only 1 helix
+* #THRDLEAD=#KVALSAVE
+* Helix inaccurate for Taper thread
+*
+* Extract canned cycle parameters
+* Cutting upwards
+* %IF #THRDENDZ=#FUNNY %THEN #THRDENDZ=#ZHOLD
+* Cutting Down
+* <INOUT #PLUNGERAD=[#PLUNGERAD=0] #STARTRAD=[#STARTRAD=0]>
+*
+* Canned cycle output
+* #MODALCYCLE=DATA2(48)
+* %CANCEL=#MODALCYCLE
+* Always output cycle definition, not hole point
+* Count arc blocks skipped
+*Suppress intermediate helical blocks if instructed. Maintain #ZHOLD
+*Set K word to full circle pitch for multi-pass block
+* reset helical block count
+*	Handle Arc centre for Thread milling - force I&J output
+*	Setvar^#ARCTYPE
+*						Signed Start to Centre	1
+*						Signed Centre to start	2
+*						Unsigned Start / Centre	3
+*						Centre					4
+* Setvar^#USERADS^Use Radius: 0 Never, 1 When Possible, 2 When Possible (XY), 3 Always, 4 Always except 360
+* IJK method of arc output
+*
+* This procedure is called when an unknown move type is detected and
+* the record is skipped.
+* #RECORD=XPOINT(#LOOP)
+* Sets remaining token variables for old (Macro37) cycle and calls code constructor
+* Some vars are set with helical processing from thread mill array values
+* Number of turns
+* Set values direct from macro
+* <Field 1  Clearance [FIELD1=2]>
+* <Field 2  Retract   [FIELD2=2]>
+* <Field 3  Diameter  [FIELD3=0]>
+* <Field 4  Level     [FIELD4=0]>
+* <Field 5  D of T    [FIELD5=0]>
+* <Field 6  Pitch     [FIELD6=2]>
+* <Field 7  Depth     [FIELD7=2]>
+* <* Retract [#RTYPE=1]>
+* <Retract= [#THRDPLUNGE=2]>
+*%IF DIRECTION=1 %THEN #DIRECTION=DATA2(4)
+*%IF DIRECTION=2 %THEN #DIRECTION=DATA2(5)
+*%IF DIRECTION=3 %THEN #DIRECTION=DATA2(6)
+*%IF DIRECTION=4 %THEN #DIRECTION=DATA2(14)
+*%IF DIRECTION=5 %THEN #DIRECTION=DATA2(15)
+*
+* Arc Direction plus Climb or Upcut
+* CLW
+* <CLW>
+* CLW and Downward
+* <CLW DOWN>
+* CLW and Upward
+* <CLW UP [#THRDLEAD=2]>
+* <CCLW>
+* CCLW and Downward
+* <CCLW DOWN>
+* CCLW and Upward
+* <CCLW UP>
+* Reverse climb/conventional for external thread
+* <EXTERNAL>
+* <[$THRDHAND]>
+* 25/03
+* <MILLMODE=       [MILLMODE=13]   0=climb 1=conventional>
+************  Diagnostic printout
+* %IF ZDEPTH=#FUNNY %THEN <* Multi-Depth>
+************
+*
+* Feed adjust here
+* #MINFEEDADJ  Adjust Feedrate Maximum Decrease (%)
+* #MAXFEEDADJ  Adjust Feedrate Maximum Increase (%)
+* Depth
+* Number of Turns
+* Retract
+* Hand of Thread
+* Climb or Upcut
+* Arc Direction
+* Spindle reversed
+* Reverse Internal
+* Reverse External
+* Spindle Forward
+* Forward Internal
+* Forward External
+* Ascending/Descending
+* New variable settings, LEFTRIGHT and PITCH2 with +-sign
+* Cut from top
+* Cut from bottom
+* Internal/External
+*Axis reversals
+* Depth also reversed by setting up/down direction signs
+*
+*							*******************
+*							Block No. Increment
+*							*******************
+*
+*
+* Check top limit, reset if exceeded
+*
+*
+*							******************************
+*							Safe Start Block No. Increment
+*							******************************
+*
+*	Output Block Number same as Tool Number (POSITION)
+*
+*							********************************
+*									Set Tooling data
+*							********************************
+*
+*
+*
+*		            		*************************************
+*									Subroutine Start / Header
+*							*************************************
+*
+*  Note  #incrxyz is current abs/inc setting
+*        #incrxyzhold is main program setting
+*        #incrsubs is subroutine setting
+*	If Increment Subroutines by ... is not set then start at Progid & increment by one else use the increment.
+* Force feedrate if required
+*Reset HOLD values for incremental first move
+* Initialise position for absolute subroutines
+* Removed changes 10-08-10
+* #XMOVE=#XHOLD*#XREVERSE
+* #YMOVE=#YHOLD*#YREVERSE
+* #ZMOVE=#ZHOLD*#ZREVERSE
+* <[#XMOVE=10][#YMOVE=10][#ZMOVE=10]>
+*	If using incremental subroutines only, it is necessary to hardcode a G91 on extra Sequence definition line
+* Force GCodes on next move
+*
+*
+*		            		********************************
+*									Subroutine Call
+*							********************************
+*
+*	If Increment Subroutines by ... is not set then start at Progid & increment by one else use the increment.
+*Check for hole cyclesub, retrieve stored value
+*Output approach move for first call, not translated calls
+* Force output if coordinate has changed
+* Found to be necessary for some templates, inculding S840
+* Inserted move, only for incremental subroutines
+*
+*
+*		            		********************************
+*									Subroutine End
+*							********************************
+*
+*	If Increment Subroutines by ... is not set then start at Progid & increment by one else use the increment.
+*	If using incremental subroutines only, it is necessary to hardcode a G90 on extra Sequence definition line
+* Store HOLECYCLE2 flag for this subroutine
+*
+*
+*	Procedure only applicable to Rotary Table configurations.
+*	Must be in Procmill.cgi since called from within Set Work Datums
+*
+*************************************************************
+*************************************************************
+*	Purpose	:	To set number of moves in Lead out sequence	*
+*	Called	:	when processing a Feed or Arc move which is	*
+*				the first move of the Lead out sequence		*
+*				Subfunct=2									*
+*															*
+*************************************************************
+**************************************
+*	Lead Out permutations
+**************************************
+*
+*
+* Check FIELD12 lies in range 1-3
+*************************************************************
+* Called from Core Toolchange, Manual Toolchange and Index
+* <Type  [$CYCLETYPE]>
+*	Call CYCL DEF for each cycle type
+* %IF $CYCLETYPE=RIGIDTAPPING %THEN %CALL=CODECON_RIGID-TAP-CYCLE:%GOTO @FINISH-CYCLDEF
+* Called by Attribute macro to control spindle for backbore and backface
+*
+* Modified for adaptive templates to have a procedure for first leg
+* and a second procedure called by a token for the second leg
+*
+*	Handles Rapid to Home strategies e.g. Xfirst, Zfirst
+*	No automation depending on tool type i.e. User must program Xfirst
+*
+* Axis Fixed
+* FIELD 1 = 1 = X FIXED	(remain at current location	)
+* FIELD 3 = 1 = Z FIXED	(	"		"		"		)
+*
+* Axis Priority
+* FIELD 4 = 0 = None
+*			1 = XFIRST
+*			2 = YFIRST
+*           3 = ZFIRST
+*
+*%IF MILLMODE=1 @PLANAR
+*%IF CAXIS<>1 @PLANAR
+** Holes differ from mill - use separate flags to determine
+** if the move to tc should be rotary or planar
+*%IF #HOLECYCLE3=1 @HOLES
+** Milling
+*%IF #ROTARYCARTESIAN=1 @PLANAR
+*%GOTO @MILLING
+*@HOLES
+*%IF #ROTARYCARTESIANHOLE=1 @PLANAR
+*@MILLING
+*%IF ACTIVELINEARAXIS<1 @PLANAR
+*%IF ACTIVELINEARAXIS>2 @PLANAR
+*%IF ACTIVELINEARAXIS=1 %THEN #XKEEP=#RKEEP*ACTIVELINEARAXISSIDE : #YKEEP=0 %ELSE #XKEEP=0 : #YKEEP=#RKEEP*ACTIVELINEARAXISSIDE
+*@PLANAR
+*
+* Fixed coords
+*
+* Called via token to create second leg of move
+*
+* Calculates number of pecks/chipbreaks in cycle
+* Called from Token
+* Nothing specified, use defaults
+* Check speed
+* Get machine maximum speed from highest gear
+* Check speed in range for spindle
+* Get details for first gear
+* Check speed in range for spindle
+*Reset to current gear
+* <NUMGEARS [NUMGEARS=0]  GEARMINRPM [GEARMINRPM=0]>
+*	Warn if Gear Range selected greater than defined in Spindle Tab
+* Check speed in range for gear
+* GEARMAXRPM,GEARMINRPM  limits for this gear on this spindle
+* Called by Attribute macro to reverse spindle when longhand tapping
+* Called by token to calculate clearance value
+* Hole cycles
+* Threadmill has different system variables
+* Control procendure for centre position checking
+* Set temporary variables according to plane of arc
+* <G19 Start [#XTEMP1=0][#YTEMP1=1]>
+* <End [#XTEMP2=0][#YTEMP2=1]>
+* <Centre [#TEMPXCENTRE=0][#TEMPYCENTRE=1]  Radius=[#RADIUS=13]>
+* <G18 Start [#XTEMP1=0][#YTEMP1=1]>
+* <End [#XTEMP2=0][#YTEMP2=1]>
+* <Centre [#TEMPXCENTRE=0][#TEMPYCENTRE=1]  Radius=[#RADIUS=13]>
+* <G17 Start [#XTEMP1=0][#YTEMP1=1]>
+* <End [#XTEMP2=0][#YTEMP2=1]>
+* <Centre [#TEMPXCENTRE=0][#TEMPYCENTRE=1]  Radius=[#RADIUS=13]>
+* Reset Output Variables according to plane of arc
+*
+*
+* Shifts centre by +- Precision alternately to improve fit
+* Output message if in Con Debug mode
+*
+** Set centre back to original position **
+* Changes here for W43524
+* Checks distances from start to centre and from end to centre against radius
+* <Centre [#TEMPXCENTRE=0][#TEMPYCENTRE=1]>
+* <CHECK_CENTRE_START>
+* <DIST1= [#DIST=0]>
+* <* WARNING - ROUNDED START RAD ERROR =[#RADERROR=5] - RETRY......>
+* <* CC [XCENTRE=3] [YCENTRE=4]>
+* <* C [XEND=3] [YEND=4]>
+*
+* <CHECK_CENTRE_END>
+* <DIST2= [#DIST=0]>
+* <* WARNING - ROUNDED END RAD  ERROR =[#RADERROR=5] - RETRY......>
+* <* CC2 [XCENTRE=3] [YCENTRE=4]>
+* <* C [XEND=3] [YEND=4]>
+* Reads hole array and modifies data for angled head and planar/rotary setting
+* #LOOP array pointer must be set before calling
+*******************************************
+*******************************************
+*
+*
+*
+* For angled heads and MC coordinates
+* XY axes may be XZ or YZ on machine
+*
+* Sets hole offset for machine coordinates
+* Called from tool change, index and move angular
+*
+*
+* Intermediate procedure for token call
+* Avoids +- error when token action interpreted
+* Check that cycle tap type matches tool tap type if set.
+* USERVAR3 set by cycle 1=Float, 2=Rigid
+* TAPTYPE set by Toolchange, 0=Unset, 1=Float, 2=Rigid
+* TAPTYPE over-rules USERVAR3
+*  #TEMPROUND - value being worked on
+*  #TEMPSIGN - holding variable for sign
+* general purpose routine to round a value within precision limit
+* Created to allow for positive and negative values
+* Round positive values
+* Round negative values
+*  #TEMPROUND - value being worked on
+*  #TEMPSIGN - holding variable for sign
+* general purpose routine to round a value within precision limit
+* Created to allow for positive and negative values
+* Angular values should not be subjected to linear precision, since the linear varies for inch and metric
+* Round positive values
+* Round negative values
+* Force Feedtype if required
+* Unchanged, Force FPR, Force FPM
+* might need -- #THRDFLAG is set 0 at toolchange and 1 for tap cycle, 2 for threading cycle
+* Skip for 5AX Inverse time feed
+* Defaults
+* Split by #MACRO and process
+* Old Thread Mill
+* <Mill>
+*
+* Tapping cycles and longhand
+* Longhand might need another flag of some kind
+* Rigid tap
+* #FTYPETAPRIG=3 as floating
+* Floating tap
+*
+* <Thread Mill Canned #FTYPETHRD=[#FTYPETHRD=13]>
+* Drilling cycles and longhand
+*
+* <drill>
+* Drilling cycles and longhand
+*
+* <bore>
+* Boring cycles and longhand
+*
+* FPM Wanted
+* <@CONVERT_FPM #SPEED=[#SPEED=13]>
+* Convert Feed
+*
+* <@CONVERT_FPR  #SPEED=[#SPEED=13]>
+* FPR Wanted
+* Convert Feed
+*
+*
+*
+*
+*	Reverse the current spindle direction : called from Tapping when emulating a cycle
+*	Initialise Plane G code according to Spindle Orientation
+*
+* Detect if milling is radial or axial rotary
+* If axial rotary but cartesian output, force nocycle
+* Decide axial rotary output based on user setting - interpolated or end point
+* If we come here after all, force nocycle to avoid regressions
+* Calculate dwell based on speed change and
+* how much RPMs per second the machine can change - #DWELLTIME
+*** Exit if not appropriate
+*** Calculate vetorial distance
+*** End if smaller then specified or if last move
+*** Now, break it for one increment
+* Checks for CRC
+* Turn CRC Off only at the very last move
+*	Output Feed move
+* Output G43 on first Z
+* Z Component in move
+* Loop until complete move is created
+** If called by token from Turn_Cycle_Stop code constructor
+** %IF #MACRO=4 %THEN #MCODE=DATA2(1):%GOTO @CALL
+** %IF #MACRO=501 %THEN #MCODE=DATA2(1):%GOTO @CALL
+*** End of include file A:\Pams\cam\machdef\template\mill-procedures-basic.cgi ***
+*** Start of include file mill-procedures-rotary.cgi ***
+*** End of include file A:\Pams\cam\machdef\template\mill-procedures-rotary.cgi ***

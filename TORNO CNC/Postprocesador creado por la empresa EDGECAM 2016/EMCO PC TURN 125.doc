@@ -1,0 +1,3811 @@
+*********************************
+*
+*  Code Wizard Templates
+*  File 4cyb-AdvTurn.cgs
+*
+* Template source file for 2 axis lathes based on ISO G code formats
+*
+* Created from old templates 10 June 2003
+* Placed under change control
+* Richard Halton
+*
+**********************************
+* 23/12/03 RHA DEV00009701 Change version and date. Set up v8.5 templates
+* 18/02/04 RHA DEV00010264 Set version 8.50.14
+* 16/08/05 RHA DEV00014427 Add KT defaults include file
+* Version 10.5
+* 16/08/05 RHA DEV00015397 Add Whiteboard include file
+* Version 2011.2
+* 23/02/11 RHA W42941 Re-organise Notes section & add macro number details
+* Version 2014.2
+* 14/11/13 RHA W61589 Implement additional turrets
+* 18/12/13 RHA W62161 Fix Synch Calls and stub procedures
+* Version 2015.2
+* 06/01/15 GST W66367 Separate common procedures for ToM and Turn
+* 19/01/15 GST W66367 Restructure - last batch
+*
+* Within Code Generator the use of macro numbers is restricted as follows:
+*    1 - 3999 Reserved for cam system Use
+* 4000 - 4999 Reserved for Code Wizard Template use
+* 5000 - 5999 Reserved for PDI customisation
+* 6000 - 9999 Reserved for user defined customisation
+*
+* Customisation of Code Generator files, both direct and
+* through CGEs must be limited to  the 6000-9999 range
+*
+*			*******************************
+*			* General template Notes Area *
+*			*******************************
+* Notes must be defined outside of all procedures using the following syntax
+* Text is displayed in the machine NOTES area of the CGD but does not show in CG source
+**************************************************************************
+*   Machine independant Code Generator include file
+*   Filename:	CWT Notes Turn General.cgi
+*	Author:		RHA
+*   Date:       23 February 2011
+**************************************************************************
+*   Change History - At end of file
+* Version 2011.2
+*          FIRST ISSUE
+* 23/02/11 RHA W42941 Document user macro ranges
+*
+**************************************************************************
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Initialise.cgi
+*
+*********************************
+*
+* Created from old templates 10 June 2003
+* Placed under change control
+* Richard Halton
+*
+* File contains Variable Declarations, Token Definitions and Format Table
+* references for turn templates.
+*
+*  General fixes also implemented here
+* 05/08/03 RHA DEV00008306 Separate vars for rapid and feed polar/cartesian mode
+* 07/08/03 RHA DEV00007890 Make R word calculation in cycles switchable
+* 12/08/03 RHA DEV00007046 Function Off tokens in Rapid to TC and Home
+* 12/08/03 RHA DEV00008119 Add FLUTE length to set up data
+* 20/08/03 RHA DEV00008484 Correct multi-start threads
+* 26/08/03 RHA DEV00008539 Add warnings counter
+*Change Control
+* 14/11/03 RHA DEV00009364 Correct coolant settings
+* 20/11/03 RHA DEV00009231 Combined spindle and coolant codes added
+* 28/11/03 RHA DEV00009456 AVN Feedback - Tool Change options
+* 01/12/03 RHA DEV00009047 Complete spindle synch
+* 05/12/03 RHA DEV00007048 Add Rigid Tapping Option
+* 15/12/03 RHA DEV00009616 Remove all Q67 series uservars, Turret side now uses USERVAR4
+* 15/12/03 RHA DEV00009612 Add new date tokens
+* 16/12/03 RHA DEV00009384 Pull Out token for threading
+* 15/01/04 RHA DEV00008184 Give GEARMCODE its own format address
+* 15/01/04 RHA DEV00009858 New token for Fanuc Polar output
+* 19/01/04 RHA DEV00008669 Use MAXRPM sys var in MAXRPM token
+* 21/01/04 RHA DEV00009848 Make Convert No-Convert modal
+* 26/01/04 RHA DEV00009967 Polar setting for Radila/Diametral #POLARDIAM
+* 26/01/04 RHA DEV00009953 Token for second leg return to ToolChange
+* 27/01/04 RHA DEV00009963 Add [ ] Tokens
+* 30/01/04 RHA DEV00008184 Make token call to C Axis codeconstructor modal
+* 02/02/04 RHA DEV00010088 add diametral switches for axial/radial machining
+* 03/02/04 RHA DEV00002228 Work round calculation problem in token definitions
+* 05/02/04 RHA DEV00009977 Tokens for user defined toolstore variables
+* 06/02/04 RHA DEV00010176 Re-assign CY_SPINDIR to MCODE address
+* 10/02/04 RHA DEV00010088 Correct #DIAM switching
+* 12/02/04 RHA DEV00004642 Token COOLTHRTLOFF
+* 13/02/04 RHA DEV00010219 Separate Z reverse switch for sub spindle driven tools
+* 08/03/04 RHA DEV00010387 Set gear for maxrpm
+* 11/03/04 RHA DEV00010521 CSS speed check optional
+* 22/03/04 RHA DEV00010537 Correct retract G codes
+* Version 900
+* 07/05/04 RHA DEV00010784 Next tool tokens have own format addresses
+*                          Add Retract Ejector Token
+*                          Add more spindle select variants,driven tool
+*                          Procedure for driven tool codes to allow for subspindle
+* 07/05/04 RHA DEV00010872 Token for Push Check Code Constructor
+* 10/05/04 RHA DEV00010872 Add separate control for polar in hole cycles
+* 13/05/04 RHA DEV00010924 Tool Change corrections, alternative code constructors etc
+* 21/05/04 RHA DEV00010783 Add #MACHINEMINRPM
+* 07/06/04 RHA DEV00010712 Separate token for CY Cycle dwell
+* 09/06/04 RHA DEV00011069 TLO fixes, #TLOSHIFT
+* 15/07/04 RHA DEV00008178 Add multi level/depth to hole cycles
+* 15/07/04 RHA DEV00010735 Cancel canned cycle for radial holes - X Clearance move
+* 19/07/04 RHA DEV00011202 Implement arc bulge control, remove #ARCTOL
+* 19/07/04 RHA DEV00010739 B Axis formatting corrections
+* 20/07/04 RHA DEV00010907 Put MAXRPM tokens in all start macros
+* 20/07/04 RHA DEV00009388 Datum choice for sub spindle movements
+* 21/07/04 RHA DEV00010739 B Axis XABSORIGIN now uses #BREFDIAM
+* 29/07/04 RHA DEV00011469 Add X Reversal options
+* Version 950
+* 30/11/04 RHA DEV00012029 Add #RADNEG
+* 01/12/04 RHA DEV00011681 Additional mill tool tokens
+* 07/12/04 RHA DEV00012698 Manual option for Polar control #POLARAUTO,#POLARMAN
+* 08/12/04 RHA DEV00012014 Add Turret Priority Token for Spindle Control
+* 08/12/04 RHA DEV00012305 Add ABS abd INC tokens for R to TC moves (Integrex)
+* 09/12/04 RHA DEV00012305 Rigid Tapping G Codes, Variables
+* 14/12/04 RHA DEV00012766 Speed modality, change REVS token output variable
+* 14/12/04 RHA DEV00012765 Make hole cycle approach context sensitive #PREPOSITION
+* 21/12/04 RHA DEV00012864 Correct helix ZEND, Make KVALUE=PITCH switchable #KVALPITCH
+* 23/12/04 RHA DEV00012874 Turning Spindle Stop token
+* 13/01/05 RHA DEV00012533 G55 datum token
+* Version 9.75
+* 04/03/05 RHA DEV00013026 Add Tool Direction selection
+* 09/03/05 RHA DEV00012875 Add User Numeric Tokens 11-20
+* Version 10
+* 20/05/05 RHA DEV00014066 Reverse driven tools G2/3 on sub spindle
+* 24/05/05 RHA DEV00013998 Call SPINDLE setting from GEARMCODE token, Add LOWGEAR token
+* 02/06/05 RHA DEV00013861 Make HOLD values available at code constructors again
+* 06/06/05 RHA DEV00009954 #CYCLEPOINTS Hole Cycle Points code constructor
+* 08/06/05 RHA DEV00014175 Radial unwrapped data
+* 07/07/05 RHA DEV00013851 Spindle initialisation control tokens
+* 22/07/05 RHA DEV00013858 Correct thread approach checks
+* 01/08/05 RHA DEV00014365 Add separtae C axis reversals for sub spindle
+* 02/08/05 RHA DEV00014365 Add Sub Spindle C offset
+* 22/08/05 RHA DEV00014785 Tokens IF_NEXT_DIFFERENT, AUTOBRAKE, HIGHGEAR
+* 31/08/05 RHA DEV00014854 Declare #BSUBREVERSE
+* 12/09/05 RHA DEV00014785 B axis Z reference follows #ZMAINREVERSE
+* 21/09/05 RHA DEV00015042 Separate C angle offset/reversal for Lower Turret
+* 22/09/05 RHA DEV00015104 Allow RPLANE to be diametral for radial hole cycles
+* 30/09/05 RHA DEV00015213 Implement AutoCoolant option
+* Version 10.5
+* 28/11/05 RHA DEV00015639 Add user tokens to MCODE definition
+* 19/12/05 RHA DEV00015823 Spindle Clamp Control
+* 25/01/06 RHA DEV00016090 Add token for If Through Tool Coolant
+* 26/01/06 RHA DEV00016091 Make Y suppression optional
+* 27/01/06 RHA DEV00015773 Correct spindle selection in chuck clamping tokens
+* Version 10.75
+* 21/04/06 RHA DEV00014455 Combine two spindle clamping mechanisms #AUTOCLAMP
+* 25/04/06 RHA DEV00016963 Add 5 axis tokens and variables
+* 24/05/06 RHA DEV00015514 #INDEXTLO - Rapid after toolchange following lathe index
+* Version 11.0
+* 01/08/06 RHA DEV00017802 Correct setting of OFFSETX token for rough and finish turn
+* 07/08/06 RHA DEV00017776 Add Spindle not started warning option
+* Version 11.5
+* 20/09/06 RHA DEV00017909 Expand trace options
+* 10/10/06 RHA DEV00018318 Create template for WFL Siemens840
+* 06/11/06 RHA DEV00016817 Cancel TLO, control improvements
+* 08/11/06 RHA DEV00016814 Stop options on turret synch
+* 14/11/06 RHA DEV00012251 Implement cylindrical mode for radial tools
+* 20/11/06 RHA DEV00018318 Additions for Gildemeister
+* 22/11/06 RHA DEV00018299 Correct part catcher codes
+* 22/11/06 RHA DEV00013667 Correct setting of #DRIVENKEEP
+* 24/11/06 RHA DEV00017578 Var for suppression of duplicate B settings
+* 07/12/06 RHA DEV00018666 Add synchronous speed tokens etc for Daewoo
+* 19/12/06 RHA             Add Bar Pull Capability
+* 20/12/06 RHA DEV00018813 Gildemeister docking requirements
+* 08/01/07 RHA DEV00018930 Add Peck Safe Distance token
+* 16/01/07 RHA DEV00018815 Additional Gildemeister provisions
+* 08/02/07 RHA DEV00019202 Correct CY cycle depth for radial
+* 09/02/07 RHA DEV00019202 Move change to Siemens Code Constructor
+* Version 11.75
+* 20/03/07 RHA DEV00019499 Tokens for 4 axis subspin moves
+* 20/03/07 RHA DEV00019508 Change dwell G code to dedicated variable
+* 12/04/07 RHA DEV00019713 Implement output options for multi-turret - #SUPPSPEED
+* 24/04/07 RHA DEV00019798 Bar Pull Datum Shift
+* 24/04/07 RHA DEV00018666 Docking CSS Preserve
+* 04/05/07 RHA DEV00019931 Bar Pull Z values and dock warning
+* 22/05/07 RHA DEV00019989 Close bracket token for C Move - Siemens
+* Version 12.00
+* 12/07/07 RHA DEV various Make G Codes more robust G00 G01 G80
+* 13/07/07 RHA F Spec      Spindle brake strategy enhancements
+* 16/07/07 RHA F Spec      Length offset adjustment for Mazak sub spindle
+* 19/07/07 RHA DEV various Make G Codes more robust G00 G01 G80, introdce #DRGCODE
+* 23/07/07 RHA F Spec      Additional work for Mazak Matrix CGD
+* 30/07/07 RHA F Spec      Fusion format - U word in CY R to TC
+* 22/08/07 RHA DEV00020772 Remove duplicate declarations
+* 23/08/07 RHA DEV00020782 Force TLO after 5 axis ON option
+* 14/09/07 RHA DEV00021011 #BRAKEFORCE1,#BRAKEFORCE2 for Integrex
+* 17/09/07 RHA DEV00021033 Spinbrake token availability
+* 18/09/07 RHA DEV00021048 Spindle clamping improvements
+* 18/09/07 RHA DEV00021011 Default cut inc, CY Hole cycles
+* 21/09/07 RHA DEV00021088 CY G Code references in tokens
+* 21/09/07 RHA DEV00021090 Lower turret hole array reversals
+* Version 12.25
+* 07/11/07 RHA DEV00011484 Token availabilty and maxtools initialisation
+* 08/11/07 RHA DEV00019011 Switchable ability to suppress unwanted LT start/end calls
+* 14/11/07 RHA DEV00020978 Allocate SS warnings to Turret
+* 16/11/07 RHA DEV00019501 Allow modality control of TLO Cancel
+* 19/11/07 RHA DEV00021600 Add new tokens for Tool ID and Group
+* 11/12/07 RHA DEV00021736 Machine Variable tokens
+* 13/12/07 RHA DEV00021845 New token to set Radial/Diametral
+* Version 12.5
+* 03/12/07 RHA DEV00021142 Siemens Coolant Format Reference
+* 18/01/08 RHA DEV00021841, DEV00021908 New optional warnings
+* 14/02/08 RHA DEV00022338 Add token for TOOLEN
+* 29/02/08 RHA DEV00022594 Integrex Tool ID lookup
+* 29/02/08 RHA DEV00022593 Added #FORCEG92
+* 04/03/08 RHA DEV00022638 Place sub spin var setting in subsidiary code con
+* 04/03/08 RHA DEV00022642 Tool Pos adjustment, LT SS
+* 07/03/08 RHA DEV00022711 Arithmetic expression corrupted by Wizard - Workround
+* 10/03/08 RHA DEV00022572 Tool tokens new and renamed
+* 11/03/08 RHA DEV00022711 Use procedure for calculation
+* 14/03/08 RHA DEV00022827 Correct BRAKEHOLD setting from tokens
+* Version 2009.1
+* 10/04/08 RHA DEV00022717 5 Axis TLO
+* 14/04/08 RHA DEV00018979 Correct BNUM reset
+* 18/04/08 RHA DEV00020823 Add exact stop code to token calculations
+* 22/04/08 RHA DEV00023110 Constant offset token etc for turn cycles
+* 28/04/08 RHA DEV00022293 Correct checking of SUBFUNCT in coolant macro
+* 30/04/08 RHA DEV00021029 Tapping spindle reversals - Siemens
+* 22/05/08 RHA DEV00023233 Check for Y0C0 at polar switch
+* 06/06/08 RHA DEV00023578 Move declarations to initialise file
+* 16/06/08 RHA DEV00023548 Add M-function to stop/start NC output
+* 07/07/08 RHA DEV00023548 M Function to suspend NC Code output
+* 09/07/08 RHA DEV00023795/7 Add back bore and helical hole cycle capability
+* 16/07/08 RHA DEV00023008 Add chuck name tokens for start and set up code constructors
+* 07/08/08 RHA DEV000022514 Allow polar switching at B0 and B180
+* 13/08/08 RHA DEV00024387 Correct Format Table reference for token CYCLE_PITCH
+* 28/08/08 RHA DEV00023797 ToolDiameter token - helical hole
+* Version 2009.2
+* 24/10/08 RHA DEV00025000 Allow Rapid after tool change with null move
+* 31/10/08 RHA DEV00025355 Correct
+* 04/11/08 RHA DEV00025072 Helical canned cycle
+* 04/11/08 RHA DEV00025327 ORIENT_ANGLE token prevents compilation
+* 07/11/08 RHA DEV00025098 Make tool angle available in setup & core tool change
+* 21/11/08 RHA DEV00025098 Use new system variable for Included tool angle
+* 07/01/09 RHA DEV00025831 Add token for holdertype
+* 08/01/09 RHA DEV00022131 Allow Y reversals on driven tools
+* 08/01/09 RHA DEV00025770 Bar Feed coords should use reverse and diam settings
+*              DEV00024568 Make Tool Unit available in toolchange. Set variable on token
+* 16/01/09 RHA DEV00025921 Turret Parking for Integrex
+* 04/02/09 RHA DEV00026063 Add force feedtype options
+* 04/02/09 RHA DEV00024564 Tool hand, mode  and reversal passed to NC
+* 25/02/09 RHA DEV00025921 Safe Park. New tokens for turret datum position
+* 03/03/09 RHA DEV00026314 New token for diametral thread depth (Okuma)
+* 05/03/09 RHA DEV00026198 Use Job data instead of ASK questions
+* 24/03/09 RHA DEV00026748 Thread turn tokens
+* 26/03/09 RHA DEV00026063 Feed mode settings for hole cycles
+* 02/04/09 RHA DEV00026929 Position token for turret park
+* 06/04/09 RHA DEV00026690 Set FEEDMODEHOLD only when G code is output
+* 09/04/09 RHA DEV00026853 Correct BAXBRAKE-OFF Format reference
+* Version 2010.1
+* 02/06/09 RHA DEV00026691 Correct tooling list for lower turret - merged files
+* 11/08/09 RHA WI35385 Allow Tool ID default to be 0 instead of null
+* Version 2010.1 SP1
+* 04/11/09 RHA W36693 Rapid feedrate for lower turret
+* Version 2010.2
+* 11/11/09 RHA W36658 Add new Thread Mill and canned cycle
+* 13/11/09 RHA W36658 Thread Mill depth token
+* 23/11/09 RHA W32626 Improve output of hole cycle G codes
+* 24/11/09 RHA W33740 Improve Exact Stop Handling
+* 11/12/09 RHA W36903 Add "Ask Once" to the NC Styles > Interactive Startup options
+* 04/01/10 RHA W33326 Default XZ Offsets to Constant Offset
+* 28/01/10 RHA W35391 Allow control of PITCH sign
+* 17/02/10 RHA W37659 Add KEEP for cartesian X and use in Polar switching
+* 23/02/10 RHA W37859 Add Use Index switch
+* 15/03/10 RHA W36738 Support for mini turrets
+* Version 2011.1
+* 27/05/10 RHA W38292 Add G code Spindle Select token, Okuma and Gneeric ISO
+* 27/05/10 RHA W38151 Lower turret cycle start tokens
+* 28/05/10 RHA W38151 Use specific Format Table refs to allow for Siemens
+* 14/06/10 RHA W38003 Thread mill canned cycle - Moriseiki
+* 15/06/10 RHA W38856 Lower Turret CY Arcend formats
+* 15/06/10 RHA W37934 Thread mill canned cycle - Siemens
+* 06/07/10 RHA W38003 Detail adjustments
+* 13/07/10 RHA W39785 Implement tap type setting at toolchange
+* 09/08/10 RHA W39968 Output Roughing Contour Start for Siemens
+* 10/08/10 RHA W34977 CY milling, more spindle brake control options
+* 19/08/10 RHA W32695 Control allowable chamfer for helical hole cycle
+* 20/08/10 RHA W40114 Enable force feed at start of turning cycles
+* 25/08/10 RHA W36639 Add lengthoffset to tooling data and set up sheet
+* Version 2011.2
+* 15/11/10 RHA W33503 Remove unwanted
+* 16/11/10 RHA W33504 Remove unwanted
+* 17/11/10 RHA W33503 Remove unwanted
+* 17/11/10 RHA W40496 Use procedure for precision rounding & apply to angular values
+* 19/11/10 RHA W33504 Remove unwanted
+* 22/11/10 RHA W33504 Fix Tool Convert angle and Work Piece Angle
+* 23/11/10 RHA W35497 Add Half distance token for Push Check
+* 26/11/10 RHA W35497 Integrex Matrix, Z APPROACH token wrt Main
+* 30/11/10 RHA W35497 Integrex Matrix, Declare #HALF1, fix calculation and format
+* 02/12/10 RHA W35497 Fix half push formatting - separate table entry
+* 02/12/10 RHA W41737 Improve IF_CSS IF_RPM tokens
+* 03/12/10 RHA W41935 Option for cycle approach inside/outside cycle definition
+* 09/12/10 RHA W41998 Add peck token to tapping cycle
+* 16/12/10 RHA W41935 Fix Siemens START tokens
+* 05/01/11 RHA W30504 Incremental B angle flag
+* 10/01/11 RHA W40121 Fix CRC Register in Rapid After Toolchange
+* 24/01/11 RHA W35876 Add Lower Turret Main options
+* 28/01/11 RHA W42399 Add tapping type code for Siemens
+* 01/02/11 RHA W41464 Add warning if no Rapid To Toolchange
+* 07/02/11 RHA W42491 Correct tool change monitoring for twin turrets #TOOLCHANGE0,#TOOLCHANGE1
+* 09/02/11 RHA W42815 Set #ATREFPT at Home and protect for merged twin turrets
+* 11/02/11 RHA W42491 Check #TOOLCHANGE in PT_OUTPUT_FEED for spindle processing
+* Version 2012.1
+* 17/05/11 RHA W44357 Check spindle speeds in Docking procedure
+* 23/05/11 RHA W44087 Allow gear code output for single gear spindles
+* 24/05/11 RHA W42981 Find gear when spindle stopped (option)
+* 09/06/11 RHA W30605 Implement Rough Profile canned cycle
+* 22/06/11 RHA W42241 Selective threadmill canned cycles
+* 23/08/11 RHA W45835 Implement Tool Offset modifier in linear feed and arc blocks
+* 24/08/11 RHA        Remove duplicate declaration #XAPPROACH
+* 30/08/11 RHA W45928 Correct #THRDINT variable use clash
+* 25/08/11 RHA W45902 Turret Park variables and tokens
+* 14/09/11 RHA W36919 Programmable Tailstock fixes
+* 06/10/11 RHA W46662 Corrections to Change Offset coding
+* Version 2012.2
+* 27/10/11 RHA W46914 Add REPEAT_ID token for use with CHANGEOFFSET
+* 31/10/11 RHA W46914 Use procedure to set variables for Offset Change
+* 01/11/11 RHA W46653 Tailstock movement options
+* 08/11/11 RHA W47189 Options for G68 datum
+* 07/11/11 RHA W46019 Make diametral rounding optional
+* 09/11/11 RHA W46914 Use procedure to set variables for CHANGEOFFSET2
+* 21/12/11 RHA W47111 Force GCode after Dwell
+* 05/01/12 RHA W44024 Additional Lower Turret code swaps
+* 14/02/12 RHA W47190 Additional token availability and m/c datum option
+* 15/03/12 RHA W39775 Implement Combined Coolant options in CY coolant control
+* 29/03/12 RHA W49819 Expand steady movement options
+* Version 2013.1
+* 14/06/12 RHA W47992 & W50538 Separate format address for POLAR_Y on sub spindle
+* 12/07/12 RHA W42904 Add Specified Range to Tool Offset options
+* 17/07/12 RHA W42904 Set default format for Siemens 840 (PGZ Manual)
+* 18/07/12 RHA W51315 Correct spindle speed settings - individual spindle tokens
+* 31/07/12 RHA W51030 Implement multi-turret synch for Siemens template
+* 09/08/12 RHA W30772 Add CY_ZSAFE and CY_ZLEVEL tokens for CY hole cycles
+* 09/08/12 RHA W51763 Add NEXT_GROUP_NUMBER token for Integrex
+* 21/08/12 RHA W51030 Changes for more than 2 turrets
+* 21/08/12 RHA W30772 Add ZSAFE and ZLEVEL tokens to fixed tool hole cycles
+* 22/08/12 RHA W52427 Correct use of #TEMP in CODECON_RA-AFTER-TOOLCHANGE
+* 23/08/12 RHA W50546 New token for 5Axis C move on sub spindle - Integrex
+* 28/08/12 RHA W52552 Fix TLO extra options
+* 30/08/12 RHA W43286 Support peck tapping via cycle point calls
+* 05/09/12 RHA W52580 Siemens hole cycle parameter corrections
+* 12/09/12 RHA W52580 Siemens tapping formats, Rigid tap code description
+* 03/10/12 RHA W31018 Correct CPL tool tip option for Rapid to Tool Change
+* 17/10/12 RHA W53223 Correct use of tool change position - multiple turrets
+* Version 2013.1
+* 14/11/12 RHA W53887 Correct Toolchange move from PARK macros
+* Version 2013.2
+* 22/03/13 GST W54195 Create NEXT tokens for toolchange parameters
+* 25/03/13 GST W54191 Force feed type - implement independet floating x rigid tapping
+* 22/05/13 RHA W56631 Parking, correct for initial CPL variations, tidy declarations
+* 28/05/13 RHA W56631 Parking, Initial CPL (Spindle) now in system variables
+* Version 2014.1
+* 08/10/13 RHA W56677 Implement new coolant controls
+* 23/10/13 RHA W57656 Declare #G200HOLEFLAG
+* Version 2014.2
+* 05/02/14 RHA W58922 Implement CRC check in rapid moves
+* 05/03/14 RHA W55287 variable for Executive Macro reference
+* Version 2015.1
+* 19/06/14 RHA W65355 Move FEEDGCODE setting to utility procedure
+* 16/07/14 RHA W66005 Multiple Turrets - Synchronisation of specific turrets (Templates)
+* 30/07/14 RHA W59462 Add angular precision setting
+* 30/07/14 RHA W44710 Implement Caxis Helical Code Constructors
+* Version 2015.2
+* 10/12/14 RHA W80346 Separate set-up sheet for each turret
+* 04/02/15 RHA W81327 Tidy declarations for G200
+* 11/02/15 RHA W81419 Add Transfer from Sub to Main macro (268)
+* 12/02/15 RHA W79953 Option to force XZ at canned start/end blocks
+* 21/02/15 RHA W81563 Change Sub Spindle X move format to !FT_XMOVE
+* 30/04/15 RHA W82984 Correct sub spindle end movement in Pick and Return
+* Version 2016.1
+* 17/06/15 RHA ECAM-1016 Provide alternative Speed address format in CY (Okuma)
+* 16/06/15 GST W83495 Allow thread turn on YZ plane
+* 17/06/15 RHA ECAM-1016 Provide CSS speed format and token (Siemens)
+* 06/07/15 GST ECAM-113 Implement MTM Siemens
+* 28/07/15 RHA ECAM-2341 Implement angle at Tool Change
+* 05/08/15 RHA ECAM-1150 Initialise B angle at Tool Change
+*
+***********************************************************************************
+*
+*
+* 1 more
+* 1 more
+* 2 more
+* 1 more
+* 5 more
+* Is this used ?
+* At least 4 more
+* 1 more
+* 1 more
+* 1 more
+* 1 more
+* 1 more
+*	C & Y Axis (Milling) Specific
+*  more
+* 1 more
+* 1 more
+*
+*   Specific for Okuma turning cycles
+*
+* Rough Profile Cycle
+*
+* Alternative cycle G codes for side and b axis.
+*	M Codes
+* CY M Codes
+* Sub Spindle
+*
+*********************************
+*
+*  Variable Declarations
+*
+*********************************
+*
+* For thread mill cycle
+* 5 Axis
+* Spindle clamp variables
+*********************************
+* #TEST,#PROF
+*	Block Numbering
+*	G (preparatory) codes
+*		Circular Interpolation
+*	Spindle / Gears
+*	General Coordinate Systems
+*	Rapid Traverse
+*	Hole Cycles
+*	Toolchange / Tooling
+*	Subroutines
+*	Cutter Radius Compensation
+*
+*  #NEGINCR
+*	Datum Shifting
+*	Turning Cycles
+*	Threading Cycles
+*	Turning General
+* 4 Axis
+*	Caxis / Yaxis (Milling)
+* CY Thread Milling
+* Compensation
+* NOTHING SET TO THIS VARIABLE AS YET ?????????
+* #TOOLYSET,$FIXED,
+*
+*User variables for
+******************************
+* Advanced Turn Declarations
+******************************
+*CHANGE
+* Vars for M codes, spindle 2
+* Misc control functions G or M
+*
+* Coolant
+* To pass HOLD values to code constructors
+* Move from Daewoo
+* Controller variables - Integrex
+* IndexG200 variables in standard files
+*********************************
+*
+*  Code Constructor Token Definitions
+*
+*********************************
+*
+*Token^token name^format^desc^action before output^action after output^Turret designation
+*	G-Codes	:	General
+* Added for Integrex only at present
+*	G Codes	:	Hole Cycles
+*	G Codes	:	Turning Cycles
+*	G Codes - Threading
+*	G Codes - Rapid Home/Toolchange
+*	M Codes	:	Coolant
+*	M Codes	:	General
+*	M Codes	:	Chuck
+*	M Codes	:	Miscellaneous M-Codes
+*
+* Tailstock tokens
+*
+* Steady tokens
+*	M Codes	:	Threading
+*	General
+* CY Movements
+* Main movement axes, upper and lower turrets
+*	Toolchange / Tooling
+* Note that *1 is needed on next line to avoid DEV00002228 (subtract operation)
+*	G50/G92 Tool Settings
+*	Tooling Data for use in NC Program
+*	Cutter Radius Compensation
+*	Circular Interpolation
+*	Hole Cycles
+*
+* Turn Cycles
+*
+*	Datum Shift : Translate
+*
+*      New
+*
+*	Tooling Sheet / Program Information
+*
+*	Subroutines
+*	By block number
+*	Position : Before, after, in-line with main NC Program
+*	Turning Cycles
+*	Threading Cycles
+*	Rapid to Home / Toolchange
+* NB XYZ zero tokens use same variables with XYZ addresses
+*	Ge style G1 X.. Z.. F0 rapid
+*	C & Y Axis (Milling)
+* Additional tokens for Siemens 3T  7/10/98
+* For S840 July 2012
+* CYCLEFEED also used in INDEXG200
+* Thread Mill Canned Cycle
+* Added for Moriseiki canned cycle
+* Added for Siemens canned cycle
+* probably not needed
+* Token^T-MILL-RETR^[#THRDPLUNGE=!FT_TM_RETR]^Thread Mill Retract
+* Token^T-MILL-CLEAR^[#TMPCLEAR=!FT_TM_CLEAR]^Thread Mill Z Clear^%CALL=PT_ZCLEAR
+* Token^T-MILL-FEED^[#THRDFEED=!FT_TM_FEED]^Thread Mill Cutting Feed
+***********************************************************
+* C Axis Tokens
+***********************************************************
+* Siemens uses CY_LEVEL, all others use CY_ZLEVEL. Different Format refs
+*
+***********************************************************
+* Job Record Tokens
+***********************************************************
+***********************************************************
+* Setup Tokens
+***********************************************************
+* DEV00022711 Original line corrupted by Wizard when writing cxt file.
+* Token^SUBJAWS-Z0^[#SUBJAWMOVE=!FT_REALSETUP]^Sub Jaws Distance to Main Z0^#SUBJAWMOVE=(#ADVANCE+SUBDATUMTOCHUCKFACE)-DOCKGRIPZ
+* Token^SUBJAWS-Z0^[#SUBJAWMOVE=!FT_REALSETUP]^Sub Jaws Distance to Main Z0^#SUBJAWMOVE=SUBDATUMTOCHUCKFACE+#ADVANCE:#SUBJAWMOVE=#SUBJAWMOVE-DOCKGRIPZ
+***********************************************************
+* User tokens for
+***********************************************************
+***********************************************************
+*	M-Functions (Used to create default Code Constructor)
+***********************************************************
+*
+************************************************************
+*					4 Axis Turning
+************************************************************
+*
+*  Token^TURRETGCODE^[#TURRETGCODE=!FT_GTURRET]^Select Turret G-Code
+* Multi-turret synch selection
+* For Okuma only
+************************************************************
+* Tokens for Bar Feed
+************************************************************
+************************************************************
+*B Axis Tokens
+************************************************************
+************************************************************
+*B Axis Index Turret (Nakamurra)
+************************************************************
+************************************************************
+* Spin-select indicates which spindle is active with codes for driven and static tools
+* DRIVEN indicates whether the tool is driven or static with codes available for sub and main spindles
+* Misc control functions G or M
+*
+* Spindleid indicates which work spindle is being programmed
+*
+************************************************************
+* Sub Spindle Movement
+************************************************************
+* Token^HALF-PUSH^[#HALF1=!FT_PCHECK]^Docking Half Push Distance^#HALF1=FIELD1/2
+* 5 Axis IKJ
+*********************************
+* New Tokens for Siemens
+*********************************
+*Token^COOLCHUCKFACE2^[#CHUCKFACE=!FT_MCOOL3]^Chuck Face Coolant^%IF #SPINDLE=SPINDLEID2 %THEN #CHUCKFACE=#CHUCKFACE2 %ELSE #CHUCKFACE=#CHUCKFACE1
+*Token^COOLTHROSPIN2^[#THROUGHSPIN=!FT_MCOOL3]^Through Spindle Coolant^%IF #SPINDLE=SPINDLEID2 %THEN #THROUGHSPIN=#THROUGHSPIN2 %ELSE #THROUGHSPIN=#THROUGHSPIN1
+*Token^COOLTURRETFACE2^[#TURRETFACE=!FT_MCOOL3]^Turret Face Coolant^%IF TURRET=0 %THEN #TURRETFACE=#TURRETFACE1 %ELSE #TURRETFACE=#TURRETFACE2
+*Token^COOLTHROTOOL2^[#THROUGHTOOL=!FT_MCOOL3]^Through Tool Coolant^%IF TURRET=0 %THEN #THROUGHTOOL=#THROUGHTOOL1 %ELSE #THROUGHTOOL=#THROUGHTOOL2
+*Token^COOLANT2^[#COOL=!FT_MCOOL3]^COOLANT On/Off
+*Token^COOLANT OFF2^[#COOL=!FT_MCOOL3]^Coolant Off ^%CALL=PT_COOL_CANCEL^#COOL=#COOLHOLD
+* Added to Siemens for Gildemeister style
+* Contour start for Siemens
+*Synchronous speed for Daewoo
+*Tokens in Bar Pull
+* Tokens for Mazak Matrix Control
+* Force brake tokens for Integrex
+* New tokens for back bore cycles
+* New tokens for Helical cycles
+* Tokens for mini turret etc, moved from Daewoo
+* G400/490
+* Turret Park tokens
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-ISO-Mach.cgi
+*
+*********************************
+*
+* Created December 2003
+* Placed under change control
+* Richard Halton
+*
+* File contains Machine configuration lines
+*
+*Change Control
+* 23/12/03 RHA DEV00009701 Move MM MS MT etc to this file
+* 22/01/04 RHA DEV00009966 Correct sub spindle type setting to 3
+* 04/02/04 RHA DEV00009826 Correct MM defaults, SW17-19
+* 06/02/04 RHA DEV00009826 Change TC and Home defaults
+* 25/02/04 RHA DEV00010375 Set lower turret default to main spindle
+* 11/03/04 RHA DEV00010541 Correct MM line and comments for helical
+* 22/03/04 RHA DEV00010590 MM line settings for 2AX & 4AX
+* 21/05/04 RHA DEV00010995 Set switch 14 on 2axis sub spindle MS line to zero
+* 10/06/04 RHA DEV00011069 CRC/TLO Q var fixes
+* Version 9.75
+* 24/02/05 RHA DEV00000610 Make Q var Strings translateable
+* Version 10
+* 13/07/05 RHA DEV00014426 Set MM and MT lines for machine configuration etc
+* 29/07/05 RHA DEV00014427 Added KT data lines for machine configuration
+* 03/08/05 RHA DEV00014427 Change default ATC graphic parameters
+* 04/08/05 RHA DEV00014645 Add file name extension (NC) string to MM lines
+* 04/08/05 RHA DEV00014427 Add bevel angle, KTTURRET line
+* 05/08/05 RHA DEV00014427 Chuck parameters and Base Front Height
+* 12/08/05 RHA DEV00014721 Modify chuck parameters
+* 16/08/05 RHA DEV00014427 Move KT lines to include file
+* 19/09/05 RHA DEV00014993 & 15001 Changes to machine setup parameters
+* Version 10.75
+* 25/04/06 RHA DEV00016963 Set MM lines for 5 Axis
+* Version 11.0
+* 28/07/06 RHA DEV00017797 New MM and MT switches
+* Version 11.5
+* 08/11/06 RHA DEV00016814 Stop options on synch instruction
+* 05/02/07 RHA DEV00019146 Chamfer thread mode
+* Version 12.0
+* 02/08/07 RHA DEV00020280 Add spindle synch to docking
+* 05/09/07 RHA DEV00020280 Correct language reference
+* Version 12.5
+* 06/02/08 RHA DEV00022190 Set default CRC in helical interpolation
+* 27/02/08 RHA DEV00022540 Add MT switch 36 turret type
+* Version 2009.1
+* 13/08/08 RHA DEV00023795 Implement Back Bore & Face and Helical hole cycles
+* Version 2009.2
+* 19/12/08 RHA DEV00025797 Comment new MT fields
+* 06/01/09 RHA DEV00020613 Add default file name suffices to MT lines
+* 01/04/09 RHA DEV00025920 Add Turret Park data
+* Version 2011.1
+* 04/06/10 RHA W39410 Document MM line switches 42 43
+* 06/07/10 RHA W39894 Document and set MM line sw44
+* 27/08/10 RHA W40175 Set MM sw42 to 1
+* Version 2011.2
+* 16/11/10 RHA W41684 Document MM line switches
+* Version 2012.2
+* 16/08/11 RHA W36919  Add Programable Tailstock processing
+* 31/08/11 RHA W45992 Make Max Rapid and High Feed the same value
+* 16/02/12 RHA W48810 Modify MB= line in line with KT
+* 04/04/12 JME Add Datum2CentreY for MB= line
+* 20/04/12 RHA W49996 Correct use of Q206
+* Version 2013.1
+* 26/09/12 RHA W52918 MT line documentation
+* Version 2014.2
+* 14/11/13 RHA W61589 Implement additional turrets
+* 15/01/14 RHA W62669 Correct turret mount ID for driven spindles
+* 29/01/14 RHA W61589 Correct default file extension in MT lines
+* Version 2015.2
+* 08/01/15 RHA W35019 Add prog stop and comment to Rapid Home and TC
+* 08/01/15 RHA W66683 Add prog Stop to Bar Pull, Docking and S/Spin Move
+* 24/02/15 RHA W81419 Add 268 to Q var definitions
+* 02/04/15 RHA W82748 Update comment lines for MM switches
+*
+**********************************************
+* Setting up machine defaults (MM section)
+**********************************************
+**********************************************
+* Setting up turret defaults
+**********************************************
+* Note that turret movement extents have been replaced by KT line
+**********************************************
+* Setting up spindle defaults
+**********************************************
+*
+*
+*Tool Change
+* Work Datum^Datum 1^Datum 2^Datum 3^Datum 4^Datum 5^Datum 6
+* Q201=_real=CRC Register[12,15,165]
+* For Nakamura Tool Change
+* Mount Side Right
+* Mount Angle
+*	Simple Turn cycle
+* Chipbreak amount
+*	Threading cycle
+* Thread Chamfer
+* Output Type^Longhand^Single Block Cycle^Canned Cycle
+* Pull Out Amount
+* Hole Cycles
+* Tap Cycle Type^Floating^Rigid
+* Coolant
+* Chuck Face
+* Turret Face
+* Through Tool
+* Through Spindle
+* All
+*
+* 209 is prog stop options
+*
+* 208 is prog stop options, 209 used for spindle synch
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn default kt mm.cgi
+*
+*********************************
+* 24/08/05 RHA DEV00014783 Correct chuck parameters
+* 31/08/05 RHA DEV00014428 Set turrets horizontal, add turret note
+* 15/09/05 RHA DEV00014721 Modify base width and height
+* 30/09/05 RHA DEV00015186 Mounting block and Spindle protrusion dimensions
+* Version 2012.1
+* 16/08/11 RHA W36919 Add Programable Tailstock processing
+* Version 2012.2
+* 03/11/11 RHA W47190 Add data and controls for Steadies
+* KTTURRET=Name,Stations,width,radius,bevel,orientationxyz,limitsxyzabc
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-ISO.cgi
+*
+*********************************
+*
+* Created from old templates 10 June 2003
+* Placed under change control
+* Richard Halton
+*
+* File contains settings, code constructors for
+* turning templates based on generic ISO codes.
+*
+*  General fixes also implemented here
+* 05/08/03 RHA DEV00008306 Separate vars for rapid and feed polar/cartesian mode
+* 07/08/03 RHA DEV00007890 Make R word calculation in cycles switchable
+* 26/08/03 RHA DEV00008539 Add warnings counter
+*Change Control
+* 14/11/03 RHA DEV00009364 Correct coolant settings
+* 20/11/03 RHA DEV00009231 Combined spindle and coolant codes added
+* 28/11/03 RHA DEV00009456 AVN Feedback - Safe block numbering & Tool Change options
+* 01/12/03 RHA DEV00009456 Block number on/off setting
+* 01/12/03 RHA DEV00009047 Complete spindle synch
+* 05/12/03 RHA DEV00007048 Add Rigid Tapping Option
+* 10/12/03 RHA DEV00009413 Implement Template type selection and update configuration switch comments
+* 15/12/03 RHA DEV00009612 Add new date tokens
+* 15/12/03 RHA DEV00009616 Remove all Q67 series uservars
+* 16/12/03 RHA DEV00009384 Pull Out token for threading
+* 18/12/03 RHA DEV00005023 Modify MG= lines for updated Wizard
+* 19/12/03 RHA DEV00009572 Set B Axis defaults in MT lines
+* 23/12/03 RHA DEV00009704 Reposition tokens that call code constructors
+* 23/12/03 RHA DEV00009700 Replace
+* 23/12/03 RHA DEV00009701 Move MM MS MT etc to new file
+* 06/01/04 RHA DEV00009700 Shorten long strings
+* 07/01/04 RHA DEV00009700 Shorten long strings
+* 12/01/04 RHA DEV00009798 Correct sub spindle option switches (NC Style)
+* 15/01/04 RHA DEV00008184 Give GEARMCODE its own format address, add new setup tokens
+* 15/01/04 RHA DEV00009858 High Feed Option for Rotary Rapid
+* 15/01/04 RHA DEV00009858 New address for pseudo-polar Y coordinates
+* 19/01/04 RHA DEV00008669 Additional token requirements, found while developing Okuma
+* 26/01/04 RHA DEV00009967 Polar setting for Radila/Diametral #POLARDIAM
+* 26/01/04 RHA DEV00009902 Correct Z reversal initialisation
+* 26/01/04 RHA DEV00009953 Use token for second leg rapid to Home/ToolChange
+* 27/01/04 RHA DEV00009963 Add [ ] tokens to start, toolchange and B index
+* 02/02/04 RHA DEV00010088 add diametral switches for axial/radial machining
+* 03/02/04 RHA DEV00009953 IF filtering in code constructors
+* 05/02/04 RHA DEV00010058 Call WARNCOUNT in both END sequences
+* 05/02/04 RHA DEV00010113 Tidy Coolant Dialog
+* 05/02/04 RHA DEV00009977 Tokens for user defined toolstore variables
+* 06/02/04 RHA DEV00010166 Force coordinate output in Rapid after Tool Change
+* 10/02/04 RHA DEV00010088 Correct #DIAM switching
+* 10/02/04 RHA DEV00009858 Correct setting description
+* 10/02/04 RHA DEV00010200 Add blank target to format table for output initialisation
+* 12/02/04 RHA DEV00004642 Additional use of through tool coolant token*
+* 13/02/04 RHA DEV00010219 Separate Z reverse switch for sub spindle driven tools
+* 16/02/04 RHA DEV00010264 Remove old gear code settings
+* 11/03/04 RHA DEV00010521 CSS speed check optional
+* 12/03/04 RHA DEV00010538 Set HOMETYPE to 1, Make #JVALUE modal
+* 22/03/04 RHA DEV00010537 Correct Retract G Codes
+* 06/04/04 RHA DEV00010544 Set reverse sub spindle driven to "no".
+* Version 900
+* 07/05/04 RHA DEV00010784 Next tool tokens have own format addresses
+*                          Add Retract Ejector Token
+*                          Driven codes for sub spindle
+*                          Spindle select codes for driven tools
+* 07/05/04 RHA DEV00010872 Chuck open/close correction
+* 10/05/04 RHA DEV00010872 Add separate control for polar in hole cycles
+* 13/05/04 RHA DEV00010924 Tool Change corrections, alternative code constructors etc
+* 17/05/04 RHA DEV00010788 Remove hard coded spindle default in START macro
+* 17/05/04 RHA DEV00010961 Make tool and datum list available at END
+* 20/05/04 RHA DEV00010990 Correct spindle brake default sequence
+* 08/06/04 RHA DEV00010175 Make token lists more context sensitive for 2 axis configurations
+* 09/06/04 RHA DEV00011069 Additional TLO calculation option
+* 12/07/04 RHA DEV00011376 Corrections to token availablity - 2 axis lathes.
+* 13/07/04 RHA DEV00010745 Correct modality switching of synch codes and SS Clamp
+* 15/07/04 RHA DEV00008178 Add multi level/depth to hole cycles
+* 19/07/04 RHA DEV00011202 Implement arc bulge control
+* 19/07/04 RHA DEV00010739 B Axis formatting corrections
+* 20/07/04 RHA DEV00010907 Put MAXRPM tokens in all start macros
+* 20/07/04 RHA DEV00009388 Datum choice for sub spindle movements
+* 22/07/04 RHA DEV00010924 Correct mode-change tool change calls
+* 29/07/04 RHA DEV00011469 Add X Reversal options
+* 03/08/04 RHA             Truncate over long text string
+* 17/08/04 RHA DEV00009388 Correct sub spindle datum choice
+* 17/08/04 RHA DEV00011828 Correct start default sequence for non-sub-spindle
+* Version 9.5
+* 02/11/04 RHA DEV00012081 Face Angle Option #REVERSEFACE
+* 18/11/04 RHA DEV00010894 Set format entries for debug and null formats
+* 18/11/04 RHA DEV00012011 Remove feed tokens from default rapid output
+* 30/11/04 RHA DEV00012029 Allow negative radius on large arcs
+* 30/11/04 RHA DEV00012242 List LT tools on merged tape
+* 01/12/04 RHA DEV00011681 Additional mill tool tokens
+* 07/12/04 RHA DEV00012698 Manual option for Polar control
+* 08/12/04 RHA DEV00012640 Make max block number subserviant to Use Block Numbers
+* 09/12/04 RHA DEV00012305 Setmodal for #BRAKE
+*                          Rigid Tapping G Codes,  #RIGIDRIGHT,#RIGIDLEFT
+* 14/12/04 RHA DEV00012768 Add CRC token to toolchange code constructors
+* 14/12/04 RHA DEV00012765 Make hole cycle approach context sensitive #PREPOSITION
+* 21/12/04 RHA DEV00012864 Correct helix ZEND, Make KVALUE=PITCH switchable
+* 23/12/04 RHA DEV00012874/6 Token availablity
+* 14/01/05 RHA DEV00013074 G55 datum Token and format entry for Turret_side
+* Version 9.75
+* 16/02/05 RHA DEV00013392 Lower turret arc call
+* 16/02/05 RHA DEV00013396 SUBROUTINE token in turn cycles
+* 23/02/05 RHA DEV00009955 Add Stub for CODECON_START_TURN_CYCLE
+* 09/03/05 RHA DEV00012875 Add User Numeric Tokens 11-20
+* 09/04/05 RHA DEV00012720 Make cyclsub end extension generally available
+* Version 10
+* 20/05/05 RHA DEV00014066 Reverse driven tools G2/3 on sub spindle
+* 23/05/05 RHA DEV00014071 Correct spindle direction setting
+* 31/05/05 RHA DEV00014115 Correct sub spindle Joint/Release codes
+* 31/05/05 RHA DEV00013885 Add FEEDMODEGCODE to Bar Feed
+* 31/05/05 RHA DEV00013877 Remove Force Now in rapid after ToolChange
+* 01/06/05 RHA DEV00013972 Allow use of user selected datums
+* 02/06/05 RHA DEV00013852 Additional tokens requested for ROMI
+* 06/06/05 RHA DEV00009954 Hole Cycle Points code constructor
+* 08/06/05 RHA DEV00014175 Radial unwrapped data
+* 09/06/05 RHA DEV00013857 Set data6 coolant values
+* 15/06/05 RHA DEV00013866 Change metric default for user tokens to 4.3
+* 07/07/05 RHA DEV00013851 Spindle initialisation control tokens
+* 14/07/05 RHA DEV00013853 #ZMOVE in SS coords for R to TC & Home
+* 22/07/05 RHA DEV00013858 Correct thread approach checks
+* 28/07/05 RHA DEV00014532 Add PLANEGCODE token to turret code cons
+* 01/08/05 RHA DEV00014365 Add separtae C axis reversals for sub spindle
+* 02/08/05 RHA DEV00014365 Add Sub Spindle C offset
+* 05/08/05 RHA DEV00014305 Add ABSINC token to Sub End code constructor
+* 18/08/05 RHA DEV00014772 Correct hole cycle points option list
+* 18/08/05 RHA DEV00014693 Initialise KEEP values at start
+* 30/08/05 RHA DEV00014693 Initialise CHOLD values as #FUNNY
+* 13/09/05 RHA DEV00014496 Remove conflicting flag for rapid to feed in polar mode
+* 22/09/05 RHA DEV00015104 Allow RPLANE to be diametral for radial hole cycles
+* 30/09/05 RHA DEV00015213 AutoCoolant implemented
+* 05/10/05 RHA DEV00015229 Reset autocoolant default to ON
+* Version 10.5
+* 16/12/05 RHA DEV00015819 Correct status warning message (Start Macro)
+* 13/01/06 RHA DEV00013965 Add ABSINC token to Rapid-After-ToolChange
+* 26/01/06 RHA DEV00016091 Make Y suppression optional
+* 10/03/06 RHA DEV00015691 Fix G2/3 reversal of subspindle driven tools
+* Version 10.75
+* 11/04/06 RHA DEV00016478 Correct format table filter for !FT_VZERO
+* 12/04/06 RHA DEV00010822 Designate logical tokens by colour
+* 12/04/06 RHA DEV00016781 Document use of UARRAY1 in template
+* 12/04/06 RHA DEV00016809 Colour code tokens
+* 20/04/06 RHA DEV00016926 SUBROUTINES and WARNCOUNT designated as Logical tokens
+* 24/04/06 RHA DEV00014455 Implement spindle brake controls
+* 28/04/06 RHA DEV00016963 5 Axis additions
+* 09/05/06 RHA DEV00016963 5 Axis, B axis modality
+* 10/05/06 RHA DEV00016963 5 Axis, Independent #DIAM setting
+* 24/05/06 RHA DEV00015514 Allow Rapid after toolchange following lathe index
+* Version 11.0
+* 28/07/06 RHA DEV00017797 New MM and MT switches
+* 07/08/06 RHA DEV00017776 Add Spindle not started warning option
+* 14/08/06 RHA DEV00017927 Add ThroughTool token to TC code cons
+* Version 11.5
+* 20/09/06 RHA DEV00017909 Expand trace options
+* 06/11/06 RHA DEV00016817 Cancel TLO, control improvements using #TLOMODAL
+* 08/11/06 RHA DEV00016814 Add Safe start code constructors, called by token from Program Stop
+* 14/11/06 RHA DEV00012251 Implement cylindrical mode for radial tools
+* 22/11/06 RHA DEV00018299 Correct part catcher codes
+* 22/11/06 RHA DEV00017578 Option to suppress B Index if unchanged
+* 18/12/06 RHA DEV00018841 Add Cylindrical code to Format Table
+* 22/12/06 RHA DEV00018881 Add hole cycle depth token to turn cycles
+* 08/01/07 RHA DEV00018930 Add Peck Safe Distance token
+* 05/02/07 RHA DEV00019146 Chamfer thread mode
+* 05/02/07 RHA DEV00016782 Add Format Table reference for CYL_HEIGHT
+* Version 11.75
+* 10/04/07 RHA DEV00019598 Change tapping to use corrected DWELL G Code
+* 10/04/07 RHA DEV00019392 More drill tokens
+* 11/04/07 RHA             Make GEARMCODE token available with SPEED token
+* 12/04/07 RHA DEV00019713 Implement output options for multi-turret - #SUPPSPEED
+* 24/04/07 RHA DEV00019798 Bar Pull Datum Shift
+* Version 12.00
+* 13/07/07 RHA DEV00020473 Spindle brake additions
+* 19/07/07 RHA DEV various Setmodal for #DRGCODE
+* 24/07/07 RHA             Set modality for #ITEMP,#KTEMP thread taper variables
+* 01/08/07 RHA DEV00018692 Initialise #BRAKEHOLD
+* 02/08/07 RHA DEV00020531 Fix Incremental from Clearance option for hole cycles
+* 23/08/07 RHA DEV00020782 Force TLO after 5 axis ON option
+* 18/09/07 RHA DEV00021048 Spindle clamping improvements
+* 21/09/07 RHA DEV00021090 Lower turret hole array reversals
+* 24/09/07 RHA DEV00021100 Add spindle brake over ride controls
+* Version 12.25
+* 07/11/07 RHA DEV00011484 Token availabilty and maxtools initialisation
+* 08/11/07 RHA DEV00019011 Switchable ability to suppress unwanted LT start/end calls
+* 12/11/07 RHA DEV00017344 Set #SPINDLECODE=#FUNNY for lower turret start
+* 14/11/07 RHA DEV00020978 Allocate SS warnings to Turret
+* 16/11/07 RHA DEV00019501 CancelTLO initialisation and modality
+* 19/11/07 RHA DEV00021600 Add new tokens for Tool ID and Group
+* 30/11/07 RHA DEV00021496 Make rotary B-axial fix switchable
+* 03/12/07 RHA DEV00021534 Enable longhand tapping
+* 10/12/07 RHA DEV00022572 Change Tool ID and GROUP tokens, now 6 in total
+* Version 2009.1
+* 14/04/08 RHA DEV00018979 Correct BNUM reset
+* 22/04/08 RHA DEV00023110 Constant offset token etc for turn cycles
+* 22/05/08 RHA DEV00023233 Check for Y0C0 at polar switch
+* 06/06/08 RHA DEV00023555 Stub procedure for G200 hole cycle approaches
+* 09/06/08 RHA DEV00023795/7 Add stubs for codecons
+* 16/07/08 RHA DEV00023008 Add chuck name tokens for start and set up code constructors
+* 07/08/08 RHA DEV000022514 Allow polar switching at B0 and B180
+* 13/08/08 RHA DEV00023795 Implement Back Bore & Face and Helical hole cycles
+* 28/08/08 RHA DEV00023797 ToolDiameter token - helical hole
+* Version 2009.2
+* 24/10/08 RHA DEV00014875 remove duplicate rapid feedrate setting
+* 24/10/08 RHA DEV00025000 Allow Rapid after tool change with null move
+* Version 2009.2
+* 07/11/08 RHA DEV00025098 Make tool angle available in setup & core tool change
+* 07/01/09 RHA DEV00025831 Add token for holdertype
+* 08/01/09 RHA DEV00022131 Allow Y reversals on driven tools
+* 16/01/09 RHA DEV00025921 Turret park - codecon stubs
+* 04/02/09 RHA DEV00026063 Add force feedtype options
+* 04/02/09 RHA DEV00024564 Tool hand, mode  and reversal passed to NC
+* 05/03/09 RHA DEV00026198 Use Job data instead of ASK questions
+* 18/03/09 RHA DEV00026542 Set turn cycle end extension on
+* 19/03/09 RHA DEV00026542 End Style Switching added
+* 20/03/09 RHA DEV00026542 Ignore option added for cycle move to start
+* 20/03/09 RHA DEV00026063 Add FEEDMODEGCODE to Arc Output
+* 26/03/09 RHA DEV00026063 Feed mode settings for hole cycles
+* 31/03/09 RHA DEV00025920 Add code constructors for turret parking
+* 01/04/09 RHA DEV00025920 Add G30 note to park code constructors
+* 02/04/09 RHA DEV00026929 Position token for turret park
+* 08/04/09 RHA DEV00027001 Remove BLOCKNUM from FEEDMODEBLOCK calls
+* 17/04/09 RHA DEV00027099 Add BMOVE and WORKGCODE to Unpark
+* Version 2010.1
+* 21/04/09 RHA DEV00027004 Feedrate note for tapping cycles
+* 21/04/09 RHA DEV00027171 Correct Y Token availability in turret park
+* 21/04/09 RHA DEV00027417 Fix CKEEP initialisation
+* 02/06/09 RHA DEV00026691 Correct tooling list for lower turret - merged files
+* 09/06/09 RHA WI33885 Templates turn - Add speed value diagnostics
+* 15/07/09 RHA WI33455 Add Feed token and TEXT line to threading cycles
+* 29/07/09 RHA WI35149 Make LENGTHOFFSET2 token common and use for offset change
+* 01/01/09 RHA W36232 2CY fails to process due to corruption of PASS count
+* Version 2010.1 SP1
+* 14/10/09 RHA W33350 Correct Cycletime tokens in lower turret set up
+* 02/11/09 RHA W36663 Remove spindle clamp from non-CY rapid after TC
+* 04/11/09 RHA W36693 Rapid feedrate for lower turret
+* Version 2010.2
+* 11/11/09 RHA W36658 Add new Thread Mill and canned cycle
+* 16/11/09 RHA W36658 Thread Mill format table entries
+* 18/11/09 RHA W36479 Improve CANCELTLO token availability
+* 20/11/09 RHA W36755 Make #MOVE diagnostic available in all CGDs
+* 24/11/09 RHA W33740 Improve Exact Stop Handling
+* 11/12/09 RHA W34862 Add Finish Turn canned cycle control
+* 11/12/09 RHA W36903 Add "Ask Once" to the NC Stlyes > Interactive Startup options
+* 18/12/09 RHA W33828 Default thread turn cycles to FEED instead of PITCH
+* 04/01/10 RHA W33326 Default XZ Offsets to Constant Offset
+* 28/01/10 RHA W35391 Allow control of PITCH sign
+* 23/02/10 RHA W37859 Add Use Index switch
+* 17/03/10 RHA W36738 Support for mini turrets
+* Version 2010.2 SP1
+* 25/05/10 RHA W39168 Add After ToolChange option for CY hole pre-position
+* Version 2011.1
+* 27/05/10 RHA W38292 Add G code Spindle Select token, Okuma and Gneeric ISO
+* 28/05/10 RHA W38151 Use specific Format Table refs to allow for Siemens
+* 10/06/10 RHA W39535 Move initialisation instructions to common procedure
+* 30/06/10 RHA W39830 Cyclsub array, trace option added
+* 15/07/10 RHA W39785 Implement tap type setting at toolchange
+* 03/08/10 RHA W40229 Add codeconstructor for stop in rough turn cycle
+* 10/08/10 RHA W34977 CY milling, more spindle brake control options
+* 19/08/10 RHA W32695 Control allowable chamfer for helical hole cycle
+* 20/08/10 RHA W40114 Enable force feed at start of turning cycles
+* 25/08/10 RHA W36639 Add lengthoffset to tooling data and set up sheet
+* 03/09/10 RHA W30985 Divert cyclsub moves for G200
+* 06/09/10 RHA W39748 Allow sub spin moves relative to G55 Datum
+* 08/09/10 RHA W40572 Ream, Bore, Chipbreak in fixed hole cycles
+* 14/09/10 RHA W40572 Tidy token use within each template
+* 15/09/10 RHA W40572 Fix Depth/Retract options for non CY machines
+* Version 2011.2
+* 26/10/10 RHA W41396 Use MAXFEED for Rapid conversion
+* 24/11/10 RHA W33253 Add ability to swap CRC codes on lower turret
+* 26/11/10 RHA W41396 Commented out pending system implementation
+* 30/11/10 RHA W36982 Polar Auto over-ride and new NCStyle tab
+* 08/12/10 RHA W41935 Option for cycle approach inside/outside cycle definition
+* 09/12/10 RHA W41998 Add peck token to tapping cycle
+* 20/12/10 RHA W31031 Add CY_SPEED token to Generic ISO template
+* 05/01/11 RHA W30504 Add incremental angles variables
+* 05/01/11 RHA W35876 Fix sub spindle offset, split C/Y dialog
+* 07/01/11 RHA W35876 Add lower turret main spindle offset
+* 10/01/11 RHA W40121 Fix CRC Register in Rapid After Toolchange
+* 24/01/11 RHA W35876 Add Lower Turret Main options
+* 01/02/11 RHA W41464 Add warning if no Rapid To Toolchange
+* 07/02/11 RHA W39505 Allow multi-start canned threads
+* 23/02/11 RHA W42941 Re-organise Notes section & add macro number details
+* 04/05/11 RHA W44295 Remove incremental angle option from C Axis Functions
+* Version 2012.1
+* 23/05/11 RHA W43411 Add PECKSAFE token to fixed hole cycles
+* 23/05/11 RHA W44087 Allow gear code output for single gear spindles
+* 24/05/11 RHA W42981 Find gear when spindle stopped (option)
+* 09/06/11 RHA W30605 Implement Rough Profile canned cycle
+* 16/06/11 RHA W43720 Clarify helical pitch option text
+* 20/06/11 RHA W44888 Correct
+* 22/06/11 RHA W42241 Selective threadmill canned cycles
+* 10/08/11 RHA W43411 Add PECKSAFE token to fixed hole cycles
+* 16/08/11 RHA W36919 Add Programmable Tailstock processing
+* 17/08/11 RHA W30605 Rough Profile canned cycle incomplete - removed
+* 23/08/11 RHA W45835 Implement Tool Offset modifier in linear feed and arc blocks
+* 24/08/11 RHA W35149 Modify Tool Offset output for datum change in finish groove cycle
+* 30/08/11 RHA W45902 Turret Park variables and tokens
+* 06/09/11 RHA W44677 Correct IF TEMPLATE filtering in Format Table
+* 06/09/11 RHA W46095 Add option to reverse X, rotary, B axis, B180
+* 06/09/11 RHA W45835 Fix offset change format
+* 07/09/11 RHA W45412 Force X on Single Block Thread Cycle (Spring cuts)
+* 13/09/11 RHA W44677 Correct availability of CMOVE addresses
+* 14/09/11 RHA W36919 Programmable Tailstock fixes
+* 05/10/11 RHA W36919 Programmable Tailstock token availablity
+* Version 2012.2
+* 31/10/11 RHA W43616 Implement Swarf Conveyor on/off control
+* 01/11/11 RHA W46653 Tailstock movement options
+* 01/11/11 RHA W47189 options for G68 datum
+* 03/11/11 RHA W47190 Add data and controls for Steadies
+* 09/11/11 RHA W46019 Make diametral rounding optional
+* 06/12/11 RHA W47635 Stub for G200_SET_REVERSE
+* 06/12/11 RHA W47190 Modify code constructor for Steadies
+* 21/12/11 RHA W47111 Force GCode after Dwell
+* 10/01/12 RHA W44024 Additional Lower Turret code swaps
+* 12/01/12 RHA W46019 Remove diametral rounding option
+* 14/02/12 RHA W47190 Additional tokens and m/c datum option
+* 22/02/12 RHA W49055 Correct Setmodal^#ACLAMP
+* 22/02/12 RHA W49022 Remove duplicate token RAPIDGCODE
+* 28/02/12 RHA W47190 Use LIST for datum option
+* 15/03/12 RHA W39775 Implement Combined Coolant options in CY coolant control
+* 22/03/12 RHA W39775 Change defaults to avoid regressions
+* 29/03/12 RHA W49819 Expand steady movement options
+* Version 2013.1
+* 29/05/12 RHA W50179 Phantom warnings
+* 29/05/12 RHA W50794 Add SPEED token to thread cycle
+* 14/06/12 RHA W47992 & W50538 Separate format address for POLAR_Y on sub spindle
+* 11/07/12 RHA W42904 Add Specified Range to Tool Offset options
+* 08/08/12 RHA W30772 Add CY_ZSAFE and CY_ZLEVEL tokens to CY hole cycles
+* 21/08/12 RHA W30772 Add ZSAFE and ZLEVEL tokens to fixed tool hole cycles
+* 28/08/12 RHA W52552 Fix TLO extra options
+* 30/08/12 RHA W43286 Support peck tapping via cycle point calls
+* 11/09/12 RHA W52351 Correct use of BARPULL_DATUM token
+* 25/09/12 RHA W51030 TURRET variable is now correct, discontinue use of PASS which has changed
+* 02/10/12 RHA W53107 Correct turret selection in END code constructor
+* 03/10/12 RHA W31018 Correct CPL tool tip option for Rapid to Tool Change
+* 23/10/12 RHA W53630 Fix to ZMOVE on Sub Spindle, Rapid Home & TC
+* Version 2013.2
+* 22/03/13 GST W54195 Create NEXT tokens for toolchange parameters
+* 25/03/13 GST W54191 Force feed type - implement independet floating x rigid tapping
+* 16/05/13 RHA W57969 Add QUADRANT token to Select Offset
+* Version 2014.1
+* 08/10/13 RHA W56677 Implement new coolant controls
+* Version 2014.2
+* 14/11/13 RHA W61589 Implement additional turrets
+* 19/12/13 RHA W62161 Fix Synch numbering for 2 upper turrets
+* 28/01/14 RHA W61589 Correct cycle time and idle tokens for lower turrets
+* 05/02/14 RHA W58922 Implement CRC check in rapid moves
+* 13/03/14 RHA W55288 Add breakout call to Start and End
+* 19/03/14 RHA W64000 Remove duplicate code
+* 16/04/14 RHA W55407 Remove FEED token from default Finish turn cycle line
+* 27/05/14 RHA W65095 Implement datum Shift in turning
+* Version 2015.1
+* 17/06/14 RHA W63941 Add XMOVE token to fixed drill cycles and default output
+* 17/06/14 RHA W64039 Add CYCLEDWELLTIME token to fixed hole cycles
+* 17/06/14 RHA W59059 Add option for Radius on axial helical arcs
+* 19/06/14 RHA W65355 Move FEEDGCODE setting to utility procedure
+* 17/07/14 RHA W66005 Multiple Turrets - Synchronisation of specific turrets (Templates)
+* 17/07/14 RHA W66369 Remove "preview" note from turn datum shift
+* 30/07/14 RHA W59462 Add angular precision setting
+* 30/07/14 RHA W44710 Implement Caxis Helical Code Constructors
+* 05/08/14 RHA W66591 Set output angle formats to 4.3 as default
+* 13/08/14 RHA W59059 Improve dialogue layout and Setvar compatibility
+* Version 2015.2
+* 16/12/14 RHA W80346 Separate set-up sheet for each turret
+* 07/01/15 RHA W80786 Correct start end call switch for inactive turrets
+* 08/01/15 RHA W35019 Add prog stop and comment to Rapid Home and TC
+* 13/01/15 RHA W80937 Temporary removal of %IF #NUMTOOLS lines in START and END - Generator compiler problem.
+* 15/01/15 RHA W64264 Improve arc centre descriptions compatibility
+* 22/01/15 RHA W80786 Correct start end call switch for inactive turrets
+* 12/02/15 RHA W79953 Option to force XZ at canned start/end blocks
+* 24/02/15 RHA W35019 Include prog stop in default output
+* 18/02/15 RHA W81842 Correct W80786 for merged tape
+* 25/02/15 RHA W49417 Correct C_AUTO_STAT token availability
+* 04/03/15 RHA W78997 Activate "Use Sequence Max High Feed"
+* Version 2016.1
+* 28/07/15 RHA ECAM-2341 Implement angle at Tool Change
+*
+*******************************
+* Main Spindle
+*	Gcodes
+*      1                 10                           20                            30                            40                             50                  60
+*   Mcodes
+*
+*********************************
+*	Gears and Spindle speeds
+* numgears,min_rpm1,maxrpm1,usermax1,min_rpm2,max_rpm2,usermax2,....
+* Scodes - steps,smin1,smax1,smin2,smax2,.....
+*
+*********************************
+*  Sub Spindle
+*	Gcodes
+*      1                 10                           20                            30                            40                             50                  60
+*   Mcodes
+*
+*
+*
+*	*************************************************************
+*	*	Template Dependant Language extensions for Code Wizard	*
+*	*************************************************************
+*
+****************************************************************
+*   Tab Name    :      Debug
+****************************************************************
+*************************************************
+*	Tab Name 	:	General G-Codes
+*************************************************
+*************************************************
+*	Tab Name 	:	Turning Cycles G-Codes
+*************************************************
+*	Order produces better panel layout.
+* Setvar^#ROUGHPROF1^73^Turning Cycles G-Codes^REAL^Rough Profile Turn Cycle
+* Setvar^#ROUGHPROF2^73^Turning Cycles G-Codes^REAL^Rough Profile Face Cycle
+* SetController^11^1^Turning Cycles G-Codes^Rough Profile canned cycle support ?
+*************************************************
+*	Tab Name 	:	Turn Hole Cycles
+*************************************************
+* SetController^9^1^Hole Cycle G-Codes^Drill Canned Cycle ?
+* Set in C/Y Hole Cycles for CY machines
+*************************************************
+*	Tab Name 	:	Threading Cycle G-Codes
+*************************************************
+*************************************************
+*	Tab Name 	:	Rapid to Home/Toolchange
+*************************************************
+*************************************************
+*	Tab Name 	:	Datum G-Codes
+*************************************************
+********************************************
+*	Tab Name 	:		M-Codes
+********************************************
+* main spindle clamping
+********************************************
+*	Tab Name 	:	Tailstock
+********************************************
+********************************************
+*	Tab Name 	:		Coolant
+********************************************
+********************************************
+*	Tab Name 	:		Coolant Flow
+********************************************
+********************************************
+*	Tab Name 	:		Coolant Through Tool
+********************************************
+********************************************
+*	Tab Name 	:		Coolant Tap M Codes
+********************************************
+********************************************
+*	Tab Name 	:		Miscellaneous controls
+********************************************
+*
+*********************************
+*
+*  Code Constructors
+*
+*********************************
+*
+*
+*
+*
+************************************************
+*	Tab Name 	:		NC File General
+*************************************************
+****************************************************************
+*   Tab Name    :      Setup Sheet
+****************************************************************
+*************************************************
+*	Tab Name 	:		Block Numbers
+*************************************************
+*************************************************
+*	Tab Name 	:		Safe Block Numbers
+*************************************************
+*************************************************
+*	Tab Name 	:		Feed Moves
+*************************************************
+*************************************************
+*	Tab Name 	:		Rapid Traverse
+*************************************************
+*************************************************
+*	Tab Name 	:		Circular Interpolation
+*************************************************
+*************************************************
+*	Tab Name 	:		Spindle Brake Control
+*************************************************
+*
+*
+*************************************************
+*	Tab Name 	:		Cutter Compensation
+*************************************************
+*************************************************
+*	Tab Name 	:		CSS Control
+*************************************************
+*************************************************
+*	Tab Name 	:		Turret Parking
+*************************************************
+*************************************************
+*	Tab Name 	:		Tool Descriptions
+*************************************************
+*************************************************
+*	Tab Name 	:		Multipoint Tooling
+*************************************************
+*************************************************
+*	Tab Name 	:		Tool Change
+*************************************************
+*************************************************
+*	Tab Name 	:		Tool Length Offset
+*************************************************
+* Additional options provided by second list
+*************************************************
+*	Tab Name 	:		Subroutines
+*************************************************
+*******************************************************************************************
+*	Modal Variables
+*
+*
+* Setmodal^#COOL^1^Modal^Coolant
+* Setmodal^#CANCELCODE^1^Modal^TLO Cancel Code
+******************************************************************
+******************************************************************
+******************************************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Program Start		*
+*	*****************************************
+*
+*	Note ! Cannot be a procedure because %SUBROUTINE must be defined in the START or END macros
+*
+* Default Sequence^ (^[PROGDESCR]^)
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Program End			*
+*	*****************************************
+*
+*	Note ! Cannot be a procedure because %SUBROUTINE must be defined in the START or END macros
+*
+*********************************
+*
+*  Format Table
+*
+*********************************
+*
+*
+*********************************
+*
+*  Code Constructors
+*
+*********************************
+*
+*
+*
+*IF TEMPLATE=2AXLATHE^2CXLATHE^2CYLATHE
+*ENDIF
+*
+*	*************************************************
+*	*	Tab Name	:	Set-Up / Tooling Sheet		*
+*	*************************************************
+*
+*
+* Setup sheet header if requested (not in loop)
+*
+*	Loop must be embedded since set up sheet is "topped & tailed"
+*
+*
+*<Turret = [TURRET=23]>
+*	Remove duplicate tools from Tool Sheet
+*
+*
+*
+*
+* Setup sheet trailer if selected (not in loop)
+*
+*	*************************************************
+*	*	Tab Name	:	Set Tooling Data			*
+*	*************************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	SET WORK DATUMS					*
+*	*************************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Rapid Move			*
+*	*****************************************
+*
+*
+*
+*
+*	*********************************************
+*	*	Tab Name	:	Linear Interpolation	*
+*	*********************************************
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Circular Interpolation Clw	*
+*	*************************************************
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Circular Interpolation CClw	*
+*	*************************************************
+*
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Bar Feed				*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Dwell				*
+*	*****************************************
+*
+*
+*	*********************************************
+*	*	Tab Name	:	Datum Shift				*
+*	*********************************************
+*
+*	*****************************************
+*	*	Tab Name	:	Cutter Compensation	*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Simple Turn 		*
+*	*****************************************
+*
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Rough Turn 			*
+*	*****************************************
+*
+*
+*
+*
+*
+* Sequence Definition^Rough Profile Cycle^4^2 Axis Turning Cycles
+* Use Tokens^DELETE^BLKNUM^RGHTURNGCODE^SUBNO^N-SUBSTART^N-SUBEND^CONSTOFFSET^OFFSETX^OFFSETZ^OFFSETXDIAM^DEPTH^FEED^SPEED^GEARMCODE^XSAFE^ZSAFE* ^DEPTH (TURN)^DEPTH (FACE)^PROFILECUTS^XCYCLESTART^ZCYCLESTART
+* Use Tokens^&GREEN&^USER-STRING^USER-STRING-1^USER-STRING-2^USER-STRING-3^USER-STRING-4^USER-STRING-5
+* Use Tokens^&GREEN&^USER-1^USER-2^USER-3^USER-4^USER-5^USER-6^USER-7^USER-8^USER-9^USER-10
+* Use Tokens^&GREEN&^USER-11^USER-12^USER-13^USER-14^USER-15^USER-16^USER-17^USER-18^USER-19^USER-20
+* Default Sequence^[DELETE]^[BLKNUM]^[RGHTURNGCODE]^[DEPTH]^R1.0
+* Default Sequence^[DELETE]^[BLKNUM]^[RGHTURNGCODE]^[N-SUBSTART]^[N-SUBEND]^[OFFSETX]^[OFFSETZ]^[PROFILECUTS]^[FEED]^[SPEED]
+* TEXT^Note: CONSTOFFSET is only available with New Turn Cycles
+*
+*	*****************************************
+*	*	Tab Name	:	Turn Cycle Stop 	*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Finish Turn 		*
+*	*****************************************
+*
+*
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	Threading Canned Cycle "G76" 	*
+*	*****************************************************
+*
+*
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	Threading Repeat Cycle "G92"	*
+*	*****************************************************
+*
+*
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	Threading Longhand "G32"		*
+*	*****************************************************
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Drill Cycle					*
+*	*************************************************
+*
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Chipbreak Cycle					*
+*	*************************************************
+*
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Ream Cycle					*
+*	*************************************************
+*
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Bore Cycle					*
+*	*************************************************
+*
+*
+*
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Tapping Cycle				*
+*	*************************************************
+*
+*
+*
+*
+*	****************************************
+*	* Tab Name :  Tapping Spindle Reverse  *
+*	****************************************
+*
+*	*****************************************
+*	*	Tab Name	:	Core Toolchange	*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	First Toolchange	*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	General Toolchange	*
+*	*****************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Spindle	Control  	*
+*	*****************************************
+*
+*	*********************************************
+*	*	Tab Name	:	Spindle Brake				*
+*	*********************************************
+*
+*	*****************************************
+*	*	Tab Name	:	Program Stop		*
+*	*****************************************
+*
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Safe Re-Start		*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Coolant				*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Exact Stop			*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Feed / min / rev	*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Comment				*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Insert NC Code		*
+*	*****************************************
+*
+*
+*
+*	*****************************************************
+*	*	Tab Name	:	Re-Select Tool Length Offset	*
+*	*****************************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Rapid To Toolchange	*
+*	*****************************************
+*
+* %IF SPINDLE=SPINDLEID2 %THEN #ZMOVE=#ZMOVE-(MCSUBDATUMZ*#ZREVERSE)
+*
+* %IF SPINDLE=SPINDLEID2 %THEN #ZMOVE=#ZMOVE-(MCSUBDATUMZ*#ZREVERSE)
+*
+*
+*	*********************************************
+*	*	Tab Name	:	Rapid After Toolchange	*
+*	*********************************************
+*
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Rapid To Home		*
+*	*****************************************
+*
+* %IF SPINDLE=SPINDLEID2 %THEN #ZMOVE=#ZMOVE-(MCSUBDATUMZ*#ZREVERSE)
+*
+* %IF SPINDLE=SPINDLEID2 %THEN #ZMOVE=#ZMOVE-(MCSUBDATUMZ*#ZREVERSE)
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Subroutine Start			*
+*	*************************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Subroutine Call				*
+*	*************************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Subroutine End				*
+*	*************************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Translate				*
+*	*************************************************
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Translate Reset				*
+*	*************************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Chuck Open			*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Chuck Pressure		*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Tailstock			*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Tailstock Quill		*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Parts Catcher		*
+*	*****************************************
+*
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Swarf Conveyor		*
+*	*****************************************
+*
+*
+*
+*	*************************************************
+*	*	Tab Name	:	Warnings        			*
+*	*************************************************
+*
+*
+*	*****************************************
+*	*	Tab Name	:	Turret park		*
+*	*****************************************
+*
+*
+*
+****************************************************
+************ MACHINE SPECIFIC PROCEDURES ***********
+****************************************************
+* Allows for machine variants, specifically Okuma
+************ Stub for Okuma specific codecon
+************ Stub for G200 specific procedure
+* Procedure to enable varying route for G200 processing
+* Procedure to enable varying route for G200 processing
+* Procedure to enable varying route for G200 processing
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Iso-Macros.cgi
+*
+*********************************
+*
+* Created from old templates 10 June 2003
+* Placed under change control
+* Richard Halton
+*
+* File contains basic macro definitions for
+* turning templates based on generic ISO codes.
+*Change Control
+* 14/11/03 RHA DEV00009364 Correct coolant settings
+* 18/11/03 RHA DEV00009247 Remove macro 110 and procedure
+* 05/12/03 RHA DEV00007048 Add Rigid Tapping Option
+* 10/12/03 RHA DEV00009413 Template type settings
+* 15/12/03 RHA DEV00009616 Remove all Q67 series uservars
+* 13/01/04 RHA DEV00009819 Correct
+* 27/01/04 RHA DEV00009901 Runtime mode switch for rotary output
+* 05/02/04 RHA DEV00010058 Move all thread processing to procedure and add spindle conrol check
+* 10/02/04 RHA DEV00004642 Through tool coolant switched by Toolstore setting
+* 30/03/04 RHA DEV00010705 Correct uservar3 in CY hole cycle macros
+* 09/06/04 RHA DEV00011069 TLO Q var fix & new procedure
+* 15/07/04 RHA DEV00008178 Add multi level/depth to hole cycles
+* 27/07/94 RHA DEV00011481 Replace HOLD and NOMOTION mechanism
+* 03/08/04 RHA DEV00011616 Correct HOLD settings in Macro=45 (Scratch values)
+* Version 9.5
+* 05/11/04 RHA DEV00012467 Correct macro list for 2AX lathes
+* 07/12/04 RHA DEV00012698 Manual option for Polar control
+* Version 9.75
+* 04/03/05 RHA DEV00012877 Use XCPL etc to reset HOLD values after B movement and at ToolChange
+* 30/03/05 RHA DEV00011967 Reset threading flags off in macros 46 and 47
+* Version 10
+* 18/05/05 RHA DEV00013860 Implement direct procedure call for manual polar control
+* 19/05/05 RHA DEV00013860 Rotary cartesian macro should be in CY macros area
+* 23/05/05 RHA DEV00014071 Correct direction reference in CY tapping macro
+* 31/05/05 RHA DEV00014025 Fix peck depth for chipbreak cycles
+* 10/06/05 RHA DEV00013861 Correct BHOLD test in Macro=45
+* 11/07/05 RHA DEV00013853 Correct CAX Tool and Home for lower turret
+* 24/04/06 RHA DEV00014455 Implement spindle brake controls
+* Version 11.0
+* 07/08/06 RHA DEV00017645 Add C_AXIS_SELECT calls
+* Version 11.5
+* 27/10/06 RHA DEV00018477 Static drill processing
+* 21/12/06 RHA DEV00018876 Correct coolant codes for sub spindle
+* 26/01/07 RHA DEV00019085 Create and call PMACRO-12, Fix CRC register
+* 05/02/07 RHA DEV00019146 Chamfer thread mode
+* Version 11.75
+* 03/04/07 RHA DEV00019655 Implement 21 flag in rotary rotate
+* Version 12.25
+* 03/12/07 RHA DEV00021534 Enable longhand tapping
+* Version 12.50
+* 18/01/08 RHA DEV00021841 Trap longhand with subroutines for holes
+* 05/02/08 RHA DEV00006310 Canned cycles in Rotary Rotate
+* Version 2009.1
+* 22/04/08 RHA DEV00023110 Constant offset token etc for turn cycles
+* 23/04/08 RHA DEV00023110 Use 64 modifier instead of 50.
+* 28/04/08 RHA DEV00022293 Correct checking of SUBFUNCT in coolant macro
+* 07/05/08 RHA DEV00017908 Improve axis reversal mechanisms
+* 07/07/08 RHA DEV00023548 M Function to suspend NC Code output
+* 23/07/08 RHA DEV00024116 Correct NC Suppression in macro 41
+* 07/08/08 RHA DEV000022514 Allow polar switching at B0 and B180
+* 13/08/08 RHA DEV00023795 Implement Back Bore & Face and Helical hole cycles
+* Version 2009.2
+* 07/11/08 RHA DEV00025098 Make tool angle available in setup & core tool change
+* 26/01/09 RHA DEV00025914 Add attribute_extension to macros and whiteboard
+* 09/03/09 RHA DEV00026386 Incorrect use of #USER18
+* 13/03/09 RHA DEV00026483 Set #MACRO in macro 256
+* 01/04/09 RHA DEV00025920 Add macros for turret parking
+* 03/04/09 RHA DEV00026690 Set #THRDFLAG in macro 163
+* 07/04/09 RHA DEV00026987 Make park macros available in all configurations
+* Version 2010.1 SP1
+* 29/10/09 RHA W32267 Correct use of #BNUMHOLD in %MACRO=SUBEND
+* Version 2010.2
+* 11/11/09 RHA W36658 Add new Thread Mill and canned cycle
+* 12/11/09 RHA W36737 Move some macro logic to procedures
+* 16/11/09 RHA W36658 Remove CRC settings from macro
+* 24/11/09 RHA W33740 Improve Exact Stop Handling
+* 08/12/09 RHA W35163 Add FEED modifier to macro 672
+* 12/01/10 RHA W36917 Rationalise PT_SET_TOOL_POS, phase 1 split turn and CY
+* Version 2011.1
+* 26/07/10 RHA W39888 Correct thread mill dialog fields
+* 03/08/10 RHA W40229 Move Attribute macro processing to a procedure
+* 27/08/10 RHA W36797 Set G code just before code con call. Radial Arcs
+* 07/09/10 RHA W40572 Ream, Bore, Chipbreak in fixed hole cycles
+* 09/09/10 RHA W40572 Tidy CY hole longhand checking
+* Version 2011.2
+* 24/11/10 RHA W40496 Always round B and C values before use
+* 30/11/10 RHA W36982 Polar Auto over-ride, use new procedure
+* 13/12/10 RHA W42051 Add DEPTH (modifier 10) to tap cycle macros
+* Version 2012.1
+* 09/06/11 RHA W30038 Turning cycles safe approach (rough Turn)
+* 09/06/11 RHA W30605 Implement Rough Profile canned cycle
+* 03/08/11 RHA W42241 Improve helical taper warning for 675 cycle
+* 16/08/11 RHA W36919 Add Programmable Tailstock processing
+* 17/08/11 RHA W30605 Rough Profile canned cycle incomplete - removed
+* Version 2012.2
+* 25/10/11 RHA W30038 Safe approach for finish turn
+* 31/10/11 RHA W43616 implement Swarf Conveyor on/off control
+* 03/11/11 RHA W47190 Add data and controls for Steadies
+* 26/04/12 RHA W49996 Correct use of Q206
+* 26/04/12 RHA W50291 Correct parameter list on MACRO=501 (Steady)
+* Version 2013.1
+* 13/06/12 RHA W50240 Old tailstock, variable names mismatch fixed
+* Version 2013.2
+* 16/05/13 RHA W54506 Remove [] from Macro=109 definition
+* Version 2014.1
+* 24/09/13 RHA W56677 Implement new coolant controls
+* Version 2014.2
+* 19/11/13 RHA W61589 Implement additional turrets
+* 13/03/14 RHA W55288 Add Customisation breakout calls
+* 14/05/14 RHA W65095 Implement datum Shift in turning
+* Version 2015.2
+* 08/01/15 RHA W35019 Add prog stop and comment to Rapid Home and TC
+* 28/04/14 RHA W67046 Force C in index for Rotary Rotate (Planar)
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+* %CALL=PMACRO-4
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*	If Increment Subroutines by ... is not set then start at Progid & increment by one else use the increment.
+*
+*
+*
+*
+*	If using incremental subroutines only, it is necessary to hardcode a G91 on extra Sequence definition line
+*
+*
+*				Only applies to Subprogram style NOT inline block number reference.
+*
+*
+*
+*
+*
+* Reset is only needed if absolute subroutines have been used with G92 datum setting
+* Update stored end point (XINC etc in Reset are TOTAL increments for this level)
+*<*HOLD2 [#XHOLD=0] [#YHOLD=1] [#ZHOLD=2] >
+* Final G92 position.
+*
+*
+* Turret parking macro
+*
+* Turret un-parking macro
+*
+******************************************
+******************************************
+* Miscellaneous "User Defined" Macros : Reserved
+******************************************
+******************************************
+*	101		Spindle				Spindle Stop/Spindle Forward/Spindle Reverse
+*	102		Set Chord			Numerical input - used in Arc => Linear interpolation
+*	103		Stop				Program/Optional
+*	104		Coolant				Coolant Off/Coolant Flood/ Coolant Auto
+*	105		Block Skip			Block Skip Off/Block Skip On
+*	106		Exact Stop			Off/On
+*	107	    XC Interpolation	Active/Inactive
+*	108		Comment				Text string input - Operator message
+*	109		Insert NC Code		Nc code literal input
+*	110		Gear Range			Gear 1/Gear 2/Gear 3/ Gear 4
+*	111		Chuck				Chuck  Close/Chuck Open
+*	112		Quill				Quill Retract/ Quill Advance
+*	113		Index Turret		Clockwise/Counterclockwise
+*	114		Tailstock			Tailstock Advance/Tailstock Retract
+*	115		Parts_Catcher		Catcher Retract/Catcher Advance
+*	116		Length_Offset		numeric input for tool length offset register
+*	117		Chuck Pressure		High / Low
+*	118		Work Coord			G54/G55/G56/G57/G58/G59
+*	119		Multi-plane Output	World / Cpl
+*	120		Bar Feed            Speed, Feed, tool Pos, Start Z, End Z
+*	121     Spindle Brake		On/Off/Low/Auto
+*	122     Spindle Synchronisation	None/Speed/Phase
+*	123     Rotary Cartesian	On/Off
+*	124     NC Code Output Suspension  On/Off
+***************************************************************
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+* This macro allows the user to suspend NC code via a misc function
+* Note that it relies on MASK being reset by Code Generator for each macro call
+* In each macro -  %IF #NCSUPPRESS=1 %THEN MASK=1
+* Suspend NC Code Output
+******************************************
+******************************************
+***** template defined macros 4xxx series
+******************************************
+******************************************
+*
+*  Record of 4xxx numbers allocated
+* Macro 4001 Swarf Conveyor
+*
+*
+* FIELD1 (1=Open, 2=Closed)
+* Main Spindle
+* Second Spindle
+* FIELD1 (1=Advance, 2=Retract)
+* FIELD2 (1=Eject)
+*
+* FIELD1 (1=Advance, 2=Retract)
+* FIELD2 (1=Quill)
+*
+* New macro drives availability of new coolant options
+*
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Procedures.cgi
+*
+*********************************
+*
+* Created from old templates 10 June 2003
+* Placed under change control
+* Richard Halton
+*
+* File contains all procedures for basic turn templates.
+*
+*********************************
+*
+*  Macro related procedures
+*
+*********************************
+* 20/08/03 RHA DEV00008484 Correct multi-start threads in single block cycles.
+* 26/08/03 RHA DEV00008539 Add warnings counter
+* 18/11/03 RHA DEV00009387 Speed settings at ToolChange etc.
+* 18/11/03 RHA DEV00009247 Remove macro 110 and procedure
+* 20/11/03 RHA DEV00009231 Combined spindle and coolant codes added
+* 28/11/03 RHA DEV00009456 AVN Feedback - Safe block numbering & Tool Change options
+* 10/12/03 RHA DEV00009413 Template type settings
+* 12/12/03 RHA DEV00009610 Remove automatic speed correction from out of limit warnings
+* 13/01/04 RHA DEV00005023 Set M code to GEARCODE system variable
+* 13/01/03 RHA DEV00009413 Template type setting corrections
+* 20/01/04 RHA DEV00009702 Correct type filter in PMACRO-15
+* 21/01/04 RHA DEV00008184 Correct use of #SBNUMCOUNT
+* 26/01/04 RHA DEV00009968 Correct safe block numbering
+* 26/01/04 RHA DEV00009902 Correct Z reverse at tool change
+* 26/01/04 RHA DEV00009953 Split procedure for second leg return to ToolChange
+* 27/01/04 RHA DEV00009918 Increment BNUM in CYCLESUB without output
+* 21/01/04 RHA DEV00008184 Changes for Integrex
+* 27/01/04 RHA DEV00008184 Integrex - Correct Z reverse on sub spindle (driven tools)
+* 29/01/04 RHA DEV00010032 Speed range check correction (look ahead for RPM for macro 1)
+* 02/02/04 RHA DEV00010088 Add diametral switches for axial/radial machining
+* 03/02/04 RHA DEV00008669 Cycle sub turn/face switching on DEPTH setting
+* 05/02/04 RHA DEV00010058 Check for spindle priority when tapping or threading (turn mode)
+* 05/02/04                 Output all warnings via code constructor to increment count
+* 09/02/04 RHA DEV00010058 Remove "abandon" from thread check
+* 10/02/04 RHA DEV00010088 Correct #DIAM switching
+* 09/02/04 RHA DEV00010058 Reinstate NOCYCLE in thread check
+* 12/02/04 RHA DEV00010219 Correct RPLANE setting - fixed reverse axial
+* 13/02/04 RHA DEV00010219 Separate Z reverse switch for sub spindle driven tools
+* 13/02/04 RHA DEV00004642 PMACRO-15 Through tool coolant for static tools
+* 09/03/04 RHA DEV00008840 Correct arc planes for CY arcs
+* 11/03/04 RHA DEV00010538 Correct second leg code con calls
+* 11/03/04 RHA DEV00010521 CSS speed check optional
+* 22/03/04 RHA DEV00010537 Correct retract G codes
+* 24/03/04 RHA DEV00010648 Correct priority check
+* 01/04/04 RHA DEV00010560 Correct Z reversal of driven tools
+* 05/04/04 RHA DEV10544 & 10738 Coordinate system corrections, rotary mode
+* Version 900
+* 16/04/04 RHA DEV00010784 Remove #FEED=#FUNNY from PT_OUTPUT_RAPID
+* 16/04/04 RHA DEV00010783 Control all speed checks on CSS speed check switch
+* 07/05/04 RHA DEV00010784 Add more spindle select variants,driven tool
+*                          Procedure for driven tool codes to allow for subspindle
+* 10/05/04 RHA DEV00010872 Correct spindle stop M Codes. Case of Data2 should be DATA2
+* 20/05/04 RHA DEV00010961 Reinitialise #G54 etc for End code constructor
+* 21/05/04 RHA DEV00010783 & 10710 Correct Gear setting and CSS warnings
+* 08/06/04 RHA DEV00010896 Threadmill comp corrections
+* 09/06/04 RHA DEV00011069 TLO fixes, new procedure
+* 12/07/04 RHA DEV00011377 Correct calls in CALL_TC
+* 13/07/04 RHA DEV00011406 Correct G72 (Cyclsub) when ending on an arc
+* 16/07/04 RHA DEV00010973 Correct Tool Change HOLD
+* 16/07/04 RHA DEV00011439 Spindle code selection for non CY machines
+* 27/07/04 RHA DEV00011481 Replace HOLD and NOMOTION mechanism
+* 29/07/04 RHA DEV00011481 Put new procedures in basic file
+* 29/07/04 RHA DEV00011469 Add X Reversal options
+* 03/08/04 RHA DEV00010179 Allow for zero spindle speed in PT_SPINDLE
+* 04/08/04 RHA DEV00011481 Correct #POLAR value in Evaluation
+* 06/08/04 RHA DEV00011316 Default start for rough turn cycle at HOLD
+* Version 9.5
+* 09/11/04 RHA DEV00011316 Correct G71 approach & depth
+* 06/12/04 RHA DEV00012699 Restructure #DIAM calculations PT_MODIFIERS
+* 10/12/04 RHA DEV00012305 Correct axial move plunge feeds
+*                          Do not reset WORKGCODE for CAXIS=3 in Spindle Control
+* 14/12/04 RHA DEV00012767 Prevent unwanted through tool coolant codes
+* 22/12/04 RHA DEV00012877 Use XSCRATCH etc to suppress unwanted moves after toolchange
+* 23/12/04 RHA DEV00012874 Turning Spindle Stop token
+* 19/01/05 RHA DEV00013021 Correct Synch Turret Speeds
+* 19/01/05 RHA DEV00010896 Threadmill comp corrections in PMACRO-29
+* Version 9.75
+* 16/02/05 RHA DEV00013394 Check Nomotion result in cyclsub_arc
+* 16/02/05 RHA DEV00013309 Correct spindle brake - sub spindle when called from token
+* 23/02/05 RHA DEV00012720 Option on turn cyclsub end point (Okuma)
+* 25/02/05 RHA DEV00012893 Change static/driven switching to CAXIS flag
+* 04/03/05 RHA DEV00012877 Use XCPL etc to reset HOLD values after B movement and at ToolChange
+* 07/04/05 RHA DEV00012720 Avoid co-linears and allow for ending with arc
+* Version 10
+* 20/05/05 RHA DEV00013838 Add Retract Plane option to Holes and CY Holes
+* 23/05/05 RHA DEV00013934 Correction to Datum Set output
+* 27/05/05 RHA DEV00013912 Set C Hold values #FUNNY for running spindles
+* 31/05/05 RHA DEV00013988 Correct #ZCLEAR setting
+* 02/06/05 RHA DEV00013972 Allow use of user selected datums
+* 02/06/05 RHA DEV00013861 Make HOLD values available at code constructors again
+* 07/06/05 RHA DEV00014171 Correct coordinate initialisation for Lower Turret
+* 08/06/05 RHA DEV00013972 Tweak
+* 11/07/05 RHA DEV00013864 Stub procedure for lower turret assign
+* 18/07/05 RHA DEV00014305 Correct Incremental output (Evaluate Move)
+* 22/07/05 RHA DEV00014509 Correct Simple Turn Approach when X2Reversed
+* 22/07/05 RHA DEV00013858 Correct thread approach checks
+* 08/08/05 RHA DEV00014365 Correct CY_ANGLE calls, Evaluate_Move
+* 18/08/05 RHA DEV00014693 Reinstate previous meaning for HOLD values, use KEEP values for #MOVE calculations
+*                          Removed NOMOTION procedures, Call Evaluate_Move directly
+* 22/08/05 RHA DEV00014693 Fix Polar_Off position re-initialisation - #RKEEP.
+* 23/08/05 RHA DEV00014693 Correct #RKEEP, #C KEEP
+* 26/08/05 RHA DEV00014693 CAXIS=0 in PT_SET_TOOL_POS
+* 30/08/05 RHA DEV00014785 Force feed output after toolchange for safety
+* 31/08/05 RHA DEV00014693 Do not set CHOLD values at driven toolchange
+* 31/08/05 RHA DEV00014785 Do not "fix" sub spindle axial hole cycles
+* 31/08/05 RHA DEV00014854 B Axis coordinate revese on sub-spindle
+* 13/09/05 RHA DEV00013853 Correct blanked coords in moves to TC and Home
+* 14/09/05 RHA DEV00014877 Corrections to PT_GEAR_MCODE
+* 14/09/05 RHA DEV00014785 Correct XZ init for sub spindle tool changes
+* 15/09/05 RHA DEV00013853 X reversal on lower turret
+* 19/09/05 RHA DEV00014877 Set gear when spindle speed out of range
+* 21/09/05 RHA DEV00015042 CRC reversal for lower turret turning
+* 26/09/05 RHA DEV00015042 Use PT_FIX on expanded (longhand) hole cycles
+* 30/09/05 RHA DEV00015213 Implement AutoCoolant option
+* 03/10/05 RHA DEV00015042 Apply Automatic coolant on static tools
+* 05/10/05 RHA DEV00015244 Flag G200 and do not apply PT_FIX
+* 05/10/05 RHA DEV00015227 Axis reversals and Z lft for hole cycles
+* 12/10/05 RHA DEV00015311 2CYBSS wont compile
+* Version 10.5
+* 27/10/05 RHA DEV00015445 PT_FIX Force G2/3 reverse if coords reversed
+* 27/10/05 RHA DEV00015451 Arc plane correction
+* 30/11/05 RHA DEV00015688 G41/2 reversal control on sub spindle
+* 19/12/05 RHA DEV00015823 Spindle Clamp Control
+* 25/01/06 RHA DEV00016090 Set flag for conditional through coolant token
+* 25/01/06 RHA DEV00016091 Coolant fixes - NCO feedback
+* 07/03/06 RHA DEV00015797 Correct single spindle lathe spindle/coolant codes
+* Version 10.75
+* 21/04/06 RHA DEV00014455 Combine two spindle clamping mechanisms
+* 27/04/06 RHA DEV00016936 5 Axis cycle processing
+* 09/05/06 RHA DEV00016963 5 Axis, B Move modality
+* 10/05/06 RHA DEV00016963 5 Axis, Independent #DIAM setting
+* 23/05/06 RHA DEV00017267 Correct spindle brake strategy for drill
+* 23/05/06 RHA DEV00016340 Correct Baxis reversals on sub-spindle (Daewoo)
+* 13/06/06 RHA DEV00017514 Corrections to #SPINDLE setting
+* Version 11.0
+* 19/07/06 RHA DEV00017604 Tool position initialisation in non-b axis posts
+* 07/08/06 RHA DEV00017776 Add Spindle not started warning option
+*                          Speed up Gear selection processing (on speed change only)
+* 09/08/06 RHA DEV00017905 Correct ZCLEAR for Planar/Axial/SubSpindle holes
+* 17/08/06 RHA DEV00017960 Correct second leg to toolchange for incremental
+* 13/09/06 RHA DEV00018172 Correct KEEP reversals, lower turret driven radial
+* 13/09/06 RHA DEV00017776 Correct use of spindle not started warning
+* Version 11.5
+* 20/09/06 RHA DEV00017909 Expand trace options
+* 25/09/06 RHA DEV00018258 Correct pitch values for thread turn with incremental coords
+* 29/09/06 RHA DEV00018205 Disable PT_CAX_REVERSE
+* 10/10/06 RHA DEV00018318 Add PT_SET_TCMACRO for Siemens
+* 27/10/06 RHA DEV00018477 Tidy static drill processing
+* 06/11/06 RHA DEV00016817 Cancel TLO, control improvements
+* 10/11/06 RHA DEV00018566 Initialise #POLARKEEP
+* 17/11/06 RHA DEV00017343 Fix Tool change initialisation
+* 01/12/06 RHA DEV00017360 Set plane G code for CYB arcs
+* 15/12/06 RHA DEV00018824 PT_FIX only needed for B axis posts
+* 10/01/07 RHA DEV00018968 Control of B axis reversal options
+* 26/01/07 RHA DEV00019085 Create and call PMACRO-12, Fix CRC register
+* 01/02/07 RHA DEV00016815 Correct conflicts in Rapid to TC priorities
+* 01/02/07 RHA DEV00019149 Correct cyclsub X reversals
+* 02/02/07 RHA DEV00019149 Correct use of #HOMETYPE
+* 05/02/07 RHA DEV00019149 Correct KEEP values on first leg RtoTC
+* 05/02/07 RHA DEV00016817 Modality of cancel TLO
+* 06/02/07 RHA DEV00019146 Correct thread chamfer
+* 07/02/07 RHA DEV00019203 Allow datum2 use on single spindle machine
+* 12/02/07 RHA DEV00019241 Correct gear selection for CSS in ToolChange
+* 14/02/07 RHA DEV00019241 Use NEXTSPEED in B Axis instructions
+* Version 11.75
+* 19/03/07 RHA DEV00019554 Correct precision of XCP YCPL ZCPL in use
+* 11/04/07 RHA DEV00019431 Manual gear selection for CSS
+*              DEV00015772 Set correct Gear for CSS (Maxrpm)
+*              DEV00016792 Set Gear before speed set
+* 12/04/07 RHA DEV00019259 Improve PT_SPINDLE efficiency
+* 12/04/07 RHA DEV00019713 Implement output options for multi-turret - #BOTHSPEED
+* 16/04/07 RHA DEV00015772 Set correct Gear for CSS (Maxrpm)
+* 26/04/07 RHA DEV00019866 Set reference point flag in hole cycle processing
+* Version 12.00
+* 13/07/07 RHA F Spec      Spindle brake strategy enhancements
+* 16/07/07 RHA F Spec      Length offset adjustment for Mazak sub spindle
+* 20/07/07 RHA F Spec      Sub Spin TLO Offset on driven tools only
+* 24/07/07 RHA DEV00020117 Use NEXTFEED in Rapid moves
+* 26/07/07 RHA DEV00020117 Additional safeguards
+* 02/08/07 RHA DEV00020531 Fix Incremental from Clearance option for hole cycles
+* 22/08/07 RHA DEV00020771 Feedback from MCC, Force spin brake off before rot drill
+* 12/09/07 RHA DEV00020957 Fix spindle direction for 2AXSS and 4AXSS
+* 14/09/07 RHA DEV00021000 Sub spindle dir&coolant codes (remove Autocool check)
+* 17/09/07 RHA DEV00021026 Correct spindle reversals for tapping,
+* 18/09/07 RHA DEV00021048 Spindle clamping improvements
+* 25/09/07 RHA DEV00021100 %CANCEL #BRAKE when forced
+* 28/09/07 RHA DEV00021048 Correct brake setting for non-priority spindle
+* Version 12.25
+* 01/11/07 RHA DEV00021407 Fix lower turret coolant codes
+* 07/11/07 RHA DEV00019862 Suppress V0 on lower turret
+* 07/11/07 RHA DEV00014237 Fix YTOOL output in Rapid to Tool Change
+* 14/11/07 RHA DEV00019151 Cycle sub coordinates not output by trace
+* 03/12/07 RHA DEV00021534 Enable longhand tapping
+* 05/12/07 RHA             Remove , from IF TEMPLATE=
+* 12/12/07 RHA DEV00021534 Correct tapping recerse code con calls
+* Version 12.50
+* 15/01/08 RHA DEV00022062 Avoid PT_FIX in Five Axis mode
+* 17/01/08 RHA DEV00021866 Fix turret indexing codes
+* 04/02/08 RHA DEV00022182 Remove #USER1 line from SET_WORK_DATUMS
+* 08/02/08 RHA DEV00006310 Correct spindle clamping for rotary rotate
+* 04/03/08 RHA DEV00022639 Add 0 option for TLO
+* 04/03/08 RHA DEV00022626 Remove divide by zero condition by correcting previous test
+* 05/03/08 RHA DEV00022663 Correct lower turret Z (#WMOVE) initialisation at ToolChange
+* 06/02/08 RHA DEV00022664 Clamping for sub spindle hole cycles
+* 11/03/08 RHA DEV00022711 Use procedure for calculation
+* 31/03/08 RHA DEV00023018 Allow selection of sub spindle from toolchange
+* Version 2009.1
+* 09/04/08 RHA DEV00022589 Convert Rapid to highfeed
+* 10/04/08 RHA DEV00022717 5 Axis TLO
+* 14/04/08 RHA DEV00018979 Correct BNUM reset
+* 15/04/08 RHA DEV00022589 Convert Rapid to Feed in Thread blocks
+* 16/04/08 RHA DEV00023153 Rapid to feed conversion mop up
+* 16/04/08 RHA DEV00023153 Correct rapid after TC Turning, remove duplicate evaluation
+* 18/04/08 RHA DEV00020823 EXACTSTOP corrections
+* 21/04/08 RHA DEV00023153 Correction to nomotion in PT_OUTPUT_RAPID
+* 24/04/08 RHA DEV00023153 Reset drill feed in case of rapid convert
+* 25/04/08 RHA DEV00023211 Corrections to G92 cycle in incremental mode & streamline PT_OUTPUT_FEED
+* 28/04/08 RHA DEV00023225 Static tool hole cycle should finish at clearance
+* 29/04/08 RHA DEV00023211 Set #GCODE in PT_OUTPUT_FEED - used later as mode check
+* 07/05/08 RHA DEV00017908 Improve axis reversal, move macro processing to procedures
+* 08/05/08 RHA DEV00017908 Move user reversals to the Evaluate procedure
+* 15/05/08 RHA DEV00017908 Rapid to ToolChange diagnostic output
+* 20/05/08 RHA DEV00023415 Convert hole cycle approach to FEED when requested
+* 20/05/08 RHA DEV00023415 PT_CALC_VECTOR_DISTANCE allow for Y movement
+* 28/05/08 RHA DEV00017908 CYCLSUB Regression issue
+* 02/06/08 RHA DEV00023523 Allow modality of X Z in G92 cycle, upper turret
+* 04/06/08 RHA DEV00023549 Correction of addition of gauge lengths to turn tools
+* 05/06/08 RHA DEV00023556 Conversion of short rapids to feed
+* 05/06/08 RHA DEV00023554 Face-Turn approach move for Finish Turn in Cyclsub
+* 06/06/08 RHA DEV00023415 Remove hole approach regressions
+* 10/06/08 RHA DEV00017908 Move to toolchange regression (X reversal)
+* 11/06/08 RHA DEV00023415 lower turret reversals
+* 16/06/08 RHA DEV00023539 Call cancel cylindrical from PT_RAPID_TO_HOME_TOOLCHANGE
+* 01/07/08 RHA DEV00023676 Correct RAWHOLD values in EVALUATE
+* 09/07/08 RHA DEV00023795/7 Add back bore and helical hole cycle capability
+* 09/07/08 RHA DEV00017908 Correct #IVALUE diameter and axis reversals
+* 11/07/08 RHA DEV00023795 Correct template context selection & macro line
+* 14/07/08 RHA DEV00023979/23368 Polar change position initialisation, Use KEEP values, #POLARKEEP track Y
+* 15/07/08 RHA DEV00023979 Correct initialisation of reverse axial tool on lower turret
+* 16/07/08 RHA DEV00023994 Remove call to PT_SET_TOOL_POS from Rapid to ToolChange
+* 17/07/08 RHA DEV00023994 Correct use of PT_SET_TOOL_POS by Move Angular
+* 08/08/08 RHA DEV00023233 Correct polar C0 check after hole cycle
+* 18/08/08 RHA DEV00023554 Finish turn cycle start point
+* 26/08/08 GST DEV00024002 TLO shift added to absolute hole depth
+* 26/08/08 RHA DEV00024002 Apply TLO adjustment to depth and retract, absolute only
+* 10/10/08 RHA DEV00025173 Correct use of reversal modifiers in turn cycles
+* Version 2009.2
+* 31/10/08 RHA DEV00025336 Unwrapped data errors
+* 07/11/08 RHA DEV00025336 Prevent checking polarmove in Evaluate when planar
+* 08/01/09 RHA DEV00022131 Allow Y reversals on driven tools
+* 09/01/09 RHA DEV00025777 X Startin rough turn to use #DIAM, Z Start to use #ZREVERSE
+* 16/01/09 RHA DEV00025921 Turret Parking for Integrex
+* 20/01/09 RHA DEV00025921 Fix 2cy compilation
+* 28/01/09 RHA DEV00022131 Further correct for I J reversals (-0)
+* 04/02/09 RHA DEV00026063 Add force feedtype options
+* 06/02/09 RHA             Correct leaving trace in new procedure
+* 06/02/09 RHA             Correct feedtype for convert rapid to feed
+* 04/03/09 RHA             Fixes for Z Feed
+* 05/03/09 RHA DEV00026198 Use Job data instead of ASK questions
+* 09/03/09 RHA DEV00026198 Fix PROGDESCR with PARTNAME default
+* 10/03/09 RHA DEV00026063 Remove ZFEED setting for Radial tools
+* 12/03/09 RHA DEV00026063 Maintain FPM when converted from Rapid. New flag
+* 16/03/09 RHA DEV00026063 Correct #MOVE for 360deg milled arcs
+* 17/03/09 RHA DEV00026063 Fix NEXTFEED for Rapids
+* 17/03/09 RHA DEV00026542 CompGcode for rough turn canned cycles
+* 19/03/09 RHA DEV00026542 Fix non-CY compilation problem
+* 19/03/09 RHA DEV00026542 Block number count fixes, End Style Switching added
+* 19/03/09 RHA DEV00026198 Correct PROGID default
+* 20/03/09 RHA DEV00026542 Ignore option for move to start & blocknum fix
+* 20/03/09 RHA DEV00026198 Change ASK default behaviour, Programmer & Version
+* 23/03/09 RHA DEV00026690 Set #Feed=Pitch for tapping in FPR mode
+* 24/03/09 RHA DEV00026742 Fix for ENDBNUM if return outside cycle
+* 25/03/09 RHA DEV00025921 Turret UnPark - Remove B Axis diagnostic
+* 25/03/09 RHA DEV00025920 Tidy Park code in preparation for other templates
+* 26/03/09 RHA DEV00026063 Feed mode settings for hole cycles
+* 26/03/09 RHA DEV00026779 Correct feed conversion (#RPM setting) for arc moves
+* 27/03/09 RHA DEV00026063 Convert rapid to FPR when requested
+* 30/03/09 RHA DEV00026690 Correct #FEED setting for thread turn
+* 30/03/09 RHA DEV00026819 Prevent conversion to FPM in CSS mode
+* 31/03/09 RHA DEV00026883 Fix feed for converted rapid (threading)
+* 01/04/09 RHA DEV00026690 Prevent feed over-ride when radial tapping
+* 02/04/09 RHA DEV00026929 Position token for turret park
+* 06/04/09 RHA DEV00026690 Set #FEEDMODEHOLD only when G code is output
+* 07/04/09 RHA DEV00026983 Apply reversals etc to turret park coords
+* 08/04/09 RHA DEV00026983 Correction on lower turret
+* 17/04/09 RHA DEV00027099 Add BMOVE and WORKGCODE to Unpark
+* 20/04/09 RHA DEV00027117 Fix PROGID for Lower Turret
+* 21/04/09 RHA DEV00026256 Initialise position with XCPL etc at Move Angular
+* 22/04/09 RHA DEV00026256 Process XCPL for C move as well
+* 22/04/09 RHA DEV00026256 Initialise for Radial tools
+* 24/04/09 RHA DEV00027177 Adjust parking ZMOVE for Sub Spindle datum
+* 27/04/09 RHA DEV00027177 Further correction
+* Version 2010.1
+* 20/05/09 RHA DEV00026880,27000,27004,26997,12284 Feed mode control changes
+* 21/05/09 RHA DEV00026691,27420 Lower turret tooling list
+* 21/05/09 RHA DEV00021825 Rough turn FEED modality corrected
+* 22/05/09 RHA DEV00027417 Correct C position checking for Move Angular
+* 22/05/09 RHA DEV00027169 Don't initialise position for linear move angular
+* 22/05/09 RHA DEV00020266 Correct line numbers in turn cycles with all blocks numbered
+* 26/05/09 RHA DEV00026880, Etc.   Fix for spindle stopped, Fix C Keep values
+* 27/05/09 RHA DEV00027417 Correct C KEEP values in 2CY to use #CMOVE
+* 27/05/09 RHA DEV00012284 Correct converted rapids when tapping
+* 27/05/09 RHA DEV00027169 Remove #CnKEEP inconsistancies
+* 28/05/09 RHA DEV00026997 Reduce CSS warning messages and correct procedure trace name
+* 28/05/09 RHA DEV00026880 Corrections to SFM processing, remove duplication
+* 01/06/09 RHA DEV00027511 Re-instate part of PT_SPINDLE
+* 02/06/09 RHA DEV00026880 Change radius variable used in RPM calculations in case #XMOVE is incremental
+* 02/06/09 RHA DEV00027530 Call PT_CONTROL_FEEDTYPE for Thread milling
+* 03/06/09 RHA DEV00027539 Regression - Duplicate M69 output by template
+* 04/06/09 RHA WI33413 (DEV26880) Improve speed warnings
+* 05/06/09 RHA WI33726 (DEV27417) Correct #ATREFPT setting
+* 05/06/09 RHA             In-line documentation of EVALUATE_MOVE improved
+* 09/06/09 RHA WI33726 (DEV27417) Correct #ATREFPT in Rapid to Toolchange
+* 09/06/09 RHA WI33885 Templates turn - Add speed value diagnostics
+* 12/06/09 RHA WI33885 Templates turn - Add modes and CSSRadius
+* 12/06/09 RHA WI33726 Protect linear motion checks from Macro-253
+* 17/06/09 RHA WI33528 (DEV27169)  Correct move angular X initialisation in axial rotary
+* 17/08/09 RHA WI34679 Correct move angular initialisation for C moves
+* 24/08/09 RHA W34679 Remove B move (Move Angular) initialisation from non-B posts
+* 09/09/09 RHA W35703 Test replacement of some W34679 removals
+* 09/09/09 RHA W35703 Allow for CPL inconsistency planar/rotary and main/sub
+* 15/09/09 RHA W35703 Only initialise Move Angular for B changes ??
+* 18/09/09 RHA W35999 Move Angular. Initialise wrong for radial tools
+* Version 2010.1 SP1
+* 14/10/09 RHA W31599 Correct gear calculation for Z only move after TC
+* 14/10/09 RHA W32267 Correct use of #RESTARTSUBSBNUM for CYCLESUB
+* 15/10/09 RHA W36459 Correct Spindle braking in RtoH RtoTC
+* 15/10/09 RHA W32860 Comp D code fixes
+* 21/10/09 RHA W31599 Needs #TOOLCHANGE set 0 after first move
+* 21/10/09 RHA W32860 Comp D code fixes
+* 22/10/09 RHA W32860 Comp D code fixes
+* 23/10/09 RHA W36513 Ask only one time for same variable when not set
+* 30/10/09 RHA W32860 Comp D code finish turn
+* 02/11/09 RHA W36663 (W31599) Allow for null moves in rough turn cycle
+* 04/11/09 RHA W36693 Rapid feedrate for lower turret
+* Version 2010.2
+* 11/11/09 RHA W35581 Call CY_ANGLE for C move in 5 axis on (Evaluate_Move)
+* 12/11/09 RHA W36737 Move some macro logic to procedures
+* 13/11/09 RHA W36755 Add #MOVE to Mode Flags trace
+* 23/11/09 RHA W32626 Improve output of hole cycle G codes
+* 24/11/09 RHA W36917 Correct Tool Position for rotary,axial,subspin in PT_SET_TOOL_POS
+* 24/11/09 RHA W33740 Improve Exact Stop Handling
+* 26/11/09 RHA W36917 Correct Tool Position again for rotary,axial,subspin
+* 02/12/09 RHA W32626 Re-init #GCODE after drill cycle
+* 02/12/09 RHA W36657 Set #COMPDCODE1 in PMACRO-29 for CRC register
+* 04/12/09 RHA W31292 Move non-zero dwell procedure
+* 08/12/09 RHA W37039 Adjust turn cycle end block when block numbers in use
+* 11/12/09 RHA W36903 Add "Ask Once" to the NC Stlyes > Interactive Startup options
+* 16/12/09 RHA W30888 Correct thread approach X for other side of CL.
+* 04/01/10 RHA W33326 Default XZ Offsets to Constant Offset
+* 12/01/10 RHA W36917 Rationalise PT_SET_TOOL_POS, phase 1 split turn and CY
+* 13/01/10 RHA W37320 Fix C angle regressions after G113 block
+* 13/01/10 RHA W37320 Remove duplicate processing from PMACRO-15
+* 22/01/10 RHA W33326 Fix for reverse Z condition
+* 29/01/10 RHA W36917 Fix for reverse X turning
+* 02/02/10 RHA W36917 Fix for reverse X turning
+* 03/02/10 RHA W36917 Use FIX_COORDS to reverse Z on cycle approach
+* 17/02/10 RHA W37659 Add KEEP for cartesian X and use in Polar switching
+* 18/02/10 RHA W37659 Use #YMOVE for #YSTOREABS, not YMOVE, in Evaluate_Move
+*                     Centralise polar duplicate outpute blanking in Evaluate_Move
+* 18/02/10 RHA W37659 Move PT_FIX call in Evaluate_Move
+* 19/02/10 RHA W37659 remove conditions for PT_FIX call in Evaluate_Move, rely on checks in procedure
+* 22/02/10 RHA W37659 Merge #POLAR and #YMOVE processing in Evaluate_Move
+* 22/02/10 RHA W37659 Suppress #POLARMOVE in Radial mode
+* 02/03/10 RHA W37970 Correct #MOVE calculation when Y=#FUNNY
+* 15/03/10 RHA W36738 Support for mini turrets
+* 17/03/10 RHA W37894 Do not add 2 to #MOVE for Y in rotary mode
+* 13/04/10 RHA W38561 Set #XCARTKEEP at Home and Toolchange
+* 19/04/10 RHA W38575 Force Y0 on cy radial rotary moves
+* 13/04/10 RHA W38561 Rapid to Tool Change must initialise XYZ position after setting KEEP
+* 06/05/10 RHA W39073 Adjust initialised position for Parking
+* 10/05/10 RHA W39073 Adjust only if B axis present
+* Version 2010.2 SP1
+* 03/06/10 RHA W39452 Set nextspeed/feed for rapids to Y0 from macro 44
+* 08/06/10 RHA W39535 Move initialisation instructions to common procedure
+* 10/06/10 RHA W39270 Reset SPINWARN at Toolchange
+* Version 2011.1
+* 17/06/10 RHA W38384 Correct rounding of IJ centre in PT_ARC_CENTRE
+* 17/06/10 RHA W35950 Correct cyclesub block numbers for new rough turn
+* 21/06/10 RHA W35950 Fix CRC codes
+* 22/06/10 RHA W35950 Fix CRC code at end of cyclsub processing
+* 23/06/10 RHA W35950 Cyclsub processing, safe return to start
+* 25/06/10 RHA W35950 Fix cyclsub processing, return to start block number
+* 29/06/10 RHA W39766 Use corect Data1() references in %IF #GCODE
+* 30/06/10 RHA W35950 Fix cyclsub_arc processing
+* 30/06/10 RHA W39830 Cyclsub array, trace option added
+* 06/07/10 RHA W39894 Place lt sub spin axial hole cycle angle fix on MM line SW44
+* 08/07/10 RHA W35950 Fix cyclsub endpoint processing
+* 26/07/10 RHA W39785 Move PT_CHECK_TAPPING to Basic procedures
+* 29/07/10 RHA W40119 Re-instate application of #DIAM and reversal to simple turn end point
+* 03/08/10 RHA W40229 Move Attribute macro processing to a procedure & add 204 option
+* 06/08/10 RHA W40229 Use 205 instead of 204
+* 09/08/10 RHA W40128 CX output to use NEXTSPEED if processing a rapid move PT_SPINDLE
+* 10/08/10 RHA W40229 Fix trace name in PT_SET_STOP
+* 10/08/10 RHA W34977 CY milling, more spindle brake control options
+* 17/08/10 RHA W30923 Reset auto coolant after move to Toolchange
+* 20/08/10 RHA W40114 Enable force feed at start of turning cycles
+* 23/08/10 RHA W39611 Correct #NEXTTOOL setting
+* 23/08/10 RHA W34977 Correction for axial planar
+* 24/08/10 RHA W39784 Set #SPEED for spindle synch PT_SPINDLE
+* 25/08/10 RHA W36639 Add #MAXTOOLS and group tooling settings in PT_SET_DEFAULTS
+* 25/08/10 RHA W36639 Var settings needed in Toolchange as well in case of merged NC
+* 31/08/10 RHA W36639 Fix merged NC data. Don't use PASS
+* 03/09/10 RHA W40654 Rough turn corrections, new approach moves
+* 06/09/10 RHA W30985 Divert cyclsub moves for G200
+* 06/09/10 RHA W39748 Allow sub spin moves relative to G55 Datum
+* 07/09/10 RHA W40572 Ream, Bore, Chipbreak in fixed hole cycles
+* 09/09/10 RHA W40572 Re-activate canned/longhand switching
+* 21/09/10 RHA W39748 Alternative #G55ZDATUM setting if sub spindle not used
+* 22/09/10 RHA W39748 Alternative #G55ZDATUM setting removed
+* Version 2011.2
+* 26/10/10 RHA W41396 Use MAXFEED for Rapid conversion
+* 10/11/10 RHA W41235 Correct feed type control for tapping cycle feed reduction
+* 18/11/10 RHA W40496 Use procedure for precision rounding & apply to angular values
+* 18/11/10 RHA W41711 Code Generator variables protected from value changes (0,#FUNNY)
+* 19/11/10 RHA W41737 Allow gear to change when speed is constant
+* 26/11/10 RHA W41711 Code Generator variables protected from value changes (0,#FUNNY)
+* 29/11/10 RHA W41737 Allow gear to change when speed is constant
+* 30/11/10 RHA W36982 Polar Auto over-ride, initialise variable
+* 03/12/10 RHA W41935 Option for cycle approach inside/outside cycle definition
+* 03/12/10 RHA W41711 Code Generator variables protected (Drill Cycles etc)
+* 08/12/10 RHA W36982 Polar Auto over-ride fix
+* 09/12/10 RHA W41998 Add peck token to tapping cycle
+* 22/12/10 RHA W41711 Code Generator DWELL protected from #FUNNY
+* 07/01/11 RHA W35876 Add lower turret main spindle offset
+* 10/01/11 RHA W40121 Fix CRC Register in Rapid After Toolchange
+* 13/01/11 RHA W42405 Move #SPEEDHOLD setting inside GEAR_MCODE, 41737 side effect
+* 14/01/11 RHA W40121 Protect against null values in profiling etc.
+* 17/01/11 RHA W42405 Protect #CSSXMOVE from #FUNNY & 0
+* 18/01/11 RHA W42405 Protect speed warnings against repeat output
+* 21/01/11 RHA W42405 Fix #SPEEDHOLD in toolchange & make #CSSXMOVE etc absolute
+* 24/01/11 RHA W42405 Fix use of CSS flag
+* 28/01/11 RHA W42627 Suppress turret park move to toolchange if already in that position
+* 01/02/11 RHA W41464 Add warning if no Rapid To Toolchange
+* 07/02/11 RHA W39505 Allow multi-start canned threads
+* 09/02/11 RHA W42491 Correct tool change monitoring for twin turrets
+* 09/02/11 RHA W42815 Set #ATREFPT at Home and protect for merged twin turrets
+* 10/02/11 RHA W42491 Always set #TOOLCHANGE in Tool Change
+* 11/02/11 RHA W42491 Check #TOOLCHANGE in PT_OUTPUT_FEED for spindle processing
+* 15/02/11 RHA W42627 Correct lower turret warning and Unpark moves to TC
+* 21/02/11 RHA W43025 Multi-start G92 cycles
+* 17/03/11 RHA W43448 Ability to strip brackets from Tool Descriptions
+* 24/03/11 RHA W43571 Reduce duplicate speed warnings
+* 30/03/11 RHA W38580 Fix thread approach safe mode
+* 05/04/11 RHA W38580 Add ZSAFE to start position, fix taper safe start
+* 05/04/11 RHA W30038 Add FIELD4=0 check to canned cycle processing
+* 11/04/11 RHA W38580 Fix ZSAFE for back threading
+* 14/04/11 RHA W38580 Fix XSAFE for taper internal threading
+* 20/04/11 RHA W38580 Fix XSAFE for lower turret & centre line crossing
+* Version 2012.1
+* 17/05/11 RHA W44357 Check spindle speeds in Docking procedure
+* 23/05/11 RHA W44087 Allow gear code output for single gear spindles
+* 24/05/11 RHA W42981 Find gear when spindle stopped (option)
+* 26/05/11 RHA W44527 Improve max speed check in CSS mode
+* 06/06/11 RHA W43934 Fix evaluation of rotary "Y only" moves
+* 09/06/11 RHA W30038 Turning cycles safe approach (rough Turn)
+* 09/06/11 RHA W30605 Implement Rough Profile canned cycle
+* 19/07/11 RHA W44401 Z reverse correction, Rotary B180 orientation
+* 20/07/11 RHA W30605 Rough Profile canned cycle
+* 26/07/11 RHA W44401 Z reverse correction
+* 02/08/11 RHA W45504 Fix evaluation of rotary moves to TC and Home
+* 08/08/11 RHA W45036 Use XFIRST variable for safe approach ordering
+* 09/08/11 RHA W45549 unwrapped coordinates corrections
+* 16/08/11 RHA W45549 Allow Y for B90 unwrapped coordinates
+* 16/08/11 RHA W36919 Add Programmable Tailstock processing
+* 17/08/11 RHA W30605 Rough Profile canned cycle incomplete - removed
+* 22/08/11 RHA W45686 Fix C only axial rotary
+* 23/08/11 RHA W45835 Implement Tool Offset modifier in linear feed and arc blocks
+* 24/08/11 RHA W45686 Fix Y only at BMOVE=90
+* 24/08/11 RHA W35149 Modify Tool Offset output for datum change in finish groove cycle
+* 30/08/11 RHA W45928 Correct #THRDINT variable use clash
+* 25/08/11 RHA W45902 Turret Park variables and tokens
+* 25/08/11 RHA W35149 Initialise variable for datum change in Finish Groove
+* 01/09/11 RHA W46009 Fix turret park B angle when already at Toolchange
+* 05/09/11 RHA W46055 Fix Lower Turret #XKEEP setting
+* 06/09/11 RHA W46009 Set #BANGADJUST=0 instead of #FUNNY
+* 06/09/11 RHA W46095 Add option to reverse X, rotary, B axis, B180
+* 07/09/11 RHA W45902 Turret Park correct in-line comments
+* 08/09/11 RHA W45240 Improve speed of Attribute macro processing
+* 13/09/11 RHA W46161 programmable Tailstock move should call turret synch
+* 14/09/11 RHA W45902 Turret Park - Fix for over-ride position
+* 14/09/11 RHA W36919 Programmable Tailstock fixes
+* 21/09/11 RHA W46428 Remove initialisation in PMACRO-12 pending W30319 completion
+* 05/10/11 RHA W45879 Programmable Tailstock adjust position, #TSADJUST
+* Version 2012.2
+* 25/10/11 RHA W30038 Safe approach for finish turn
+* 31/10/11 RHA W46914 Use procedure to set variables for Offset Change
+* 31/10/11 RHA W43616 Implement Swarf Conveyor on/off control
+* 01/11/11 RHA W46653 Tailstock movement options
+* 01/11/11 RHA W47189 Options for G68 datum
+* 02/11/11 RHA W47190 Add data and controls for Steadies
+* 02/11/11 RHA W45240 Improve processing efficiency
+* 03/11/11 RHA W47190 Add data and controls for Steadies - populate token variables
+* 07/11/11 RHA W46019 Make diametral rounding optional
+* 08/11/11 RHA W45240 Improve processing efficiency, Fix arc type flags
+* 10/11/11 RHA W31018 Correct application of length offsets on move home/toolchange
+* 16/11/11 RHA W31018 Fix lower turret coordinates, XTOOL1 etc.
+* 23/11/11 RHA W31018 Force second leg for IndexG200 and merged NC
+* 07/12/11 RHA W47637 Make Bref shift more robust
+* 12/12/11 RHA W47637 G200 fix
+* 15/12/11 RHA W37779 G200 Bar Feed approach fix
+* 19/12/11 RHA W47662 Correct fixed tapping feed calculation
+* 05/01/12 RHA W47637 Correct fixed hole cycle approach for IndexG200
+* 09/01/12 RHA W46653 Correct quill calculation
+* 11/01/12 RHA W44024 Additional Lower Turret code swaps
+* 11/01/12 RHA W48150 Correct multistart thread pass offsets
+* 11/01/12 RHA W48182 Correct FeedModeGcode after 5 axis
+* 12/01/12 RHA W46019 Remove option, always use diametral rounding
+*                     Input Coordinate trace set to Format Table 13
+* 19/01/12 RHA W46019 Fix side effects
+* 19/01/12 RHA W48182 Correct INDEXG200 side effects
+* 25/01/12 RHA W46019 Correct turret parking side effects
+* 26/01/12 RHA W46019 Correct turning cycle side effects
+* 30/01/12 RHA W46019 Correct movement length calculation (radial dims)
+* 14/02/12 RHA W47190 Additional tokens and m/c datum option
+* 21/02/12 RHA W48952 Fix polar coordinate initialisation
+* 21/02/12 RHA W46019 Correct I value turned arc centres
+* 20/03/12 RHA W49533 Fix CRC output for side change in finish groove
+* 21/03/12 RHA W49533 Remove previous change
+* 27/03/12 RHA W39775 Implement Combined Coolant options in CY coolant control
+* 29/03/12 RHA W49820 Remove tapping feedtype workround
+* 29/03/12 RHA W49819 Expand steady movement options
+* 02/04/12 RHA W49201 Make Turning arcs and CY arc centres consistent
+* 11/04/12 RHA W49643 Use XCPL etc. to reset KEEP for incremental coords PMACRO-12
+* 18/04/12 RHA W50079 Correct sub spindle coolant code
+* 26/04/12 RHA W49819 Improve null move suppression for steadies
+* 02/05/12 RHA W50398 Improve null move suppression for steadies
+* 31/05/12 RHA W48527 Tidy and streamline CYLINDRICAL processing
+* 07/06/12 RHA W48574 Improve safety on turn cycle approach
+* Version 2013.1
+* 13/06/12 RHA W50512 Steadies, consecutive null moves not being trapped
+* 19/06/12 RHA W48574 Improve safety on turn cycle approach
+* 03/07/12 RHA W50512 Steadies, consecutive null moves not being trapped
+* 04/07/12 RHA W51455 Steadies, fix shift and Z reversals
+* 11/07/12 RHA W42904 Add Specified Range to CRC register options
+* 12/07/12 RHA W51561 Initialise #F1HOLD properly for steady rest movement mode
+* 11/07/12 RHA W42904 Add Specified Range - INDEXG200 protection
+* 12/07/12 RHA W51561 Allow first move without checks
+* 02/08/12 RHA W44675 Start coords of canned cycle profile follow modality rules
+* 09/08/12 RHA W51763 Add NEXT_GROUP_NUMBER token for Integrex
+* 21/08/12 RHA W51030 Changes for more than 2 turrets
+* 23/08/12 RHA W50485 Fix turn cycle block numbers and subroutine number
+* 23/08/12 RHA W52271 Implement priority controls for secondary turrets
+* 12/09/12 RHA W52580 Siemens tapping formats #ZLEVEL
+* 13/09/12 RHA W50485 Fix Subroutine numbers
+* 26/09/12 RHA W51030 TURRET variable is now correct, discontinue use of PASS which has changed
+* 27/09/12 RHA W51030 Further changes to controls etc.
+* 03/10/12 RHA W31018 Correct CPL tool tip option for Rapid to Tool Change
+* 03/10/12 RHA W53223 Allow for XTOOL2 XTOOL3 etc. Multiple turrets
+* 09/10/12 RHA W53218 Improve use of NUMTOOLSn, Merged tape fix
+* 09/10/12 RHA W51030 Rapid feed for multiple turrets
+* 09/10/12 RHA W31018 Correct CPL tool tip option for Rapid to Tool Change
+* 10/10/12 RHA W31018 Initialise tool tip CPL position after Rapid to Tool Change
+* 10/10/12 RHA W51030 Multi-turret feeds for rapid conversion
+* 11/10/12 RHA W53218 Improve use of NUMTOOLSn, Another merged tape fix
+* 17/10/12 RHA W53223 Correct use of XTOOLn etc. Multiple turrets
+* 09/10/12 RHA W53443 CPL tool tip option - fix for radial driven tool
+* 23/10/12 RHA W53630 Fix to Radial tool reversal in Rapid to TC or Home
+* 23/10/12 RHA W53653 Fix XTOOL lower turret positive
+* 23/10/12 RHA W53648 Fix position at toolchange, merged tapes
+* 29/10/12 RHA W53787 Move coordinates at toolchange, no B axis
+* Version 2013.2
+* 14/11/12 RHA W53887 Correct Toolchange move from PARK macros
+* 29/11/12 RHA W54387 Correct XZ move from PARK macros
+* 03/01/13 RHA W54890 Correct upper turret sub spindle MOVE coords on Move to ToolChange
+* 08/01/13 RHA W54955 Correct goto target labels
+* 29/01/13 RHA W54890 Correct upper turret planar sub spindle, add radial XZ shuffle
+* 29/01/13 RHA W55326 Fix PROGID output options
+* 30/01/13 RHA W53774 Correct tool change positions for multiple turrets
+* 31/01/13 RHA W55326 Fix PROGID output options
+* 07/02/13 RHA W55525 Fix change of sign on some moves
+* 12/02/13 RHA W53774 Fix Radial tool, fixed position=CPL coords
+* 14/02/13 RHA W53774 Correct tool position setting for multi-turret
+* 26/02/13 RHA W53774 Fix Caxis=0 and Caxis=3, Bmove=90
+* 26/02/13 RHA W53774 Fix initialisation in PT_SET_DEFAULTS
+* 27/02/13 RHA W55326 Fix PROGID output options
+* 06/03/13 RHA W55909 Correct simple turn approach
+* 14/03/13 GST W55326 New procedure for Ask ID to handle multiple turrets
+* 19/03/13 RHA W53774 Rewrite coord shuffle for Tool Change position and rapid to TC
+* 20/03/13 RHA W53774 Correct Park moves for multi-turret
+* 21/03/13 RHA W53774 Correct #XMOVE etc on Sub Spindle (MOVE tokens)
+* 22/03/13 GST W54195 Create NEXT tokens for toolchange parameters
+* 25/03/13 GST W54191 Force feed type - implement independet floating x rigid tapping
+* 26/03/13 RHA W53774 Correct previous change on this task
+* 26/03/13 RHA W56631 Correct turret park/unpark in line with Tool Change position fixes
+* 26/03/13 RHA W55909 Correct simple turn approach
+* 27/03/13 RHA W56631 Correct turret park/unpark for multiple turrets
+* 02/04/13 RHA W56631 Re-instate position initialisation lines in PARK
+* 03/04/13 RHA W56631 Correct initialisation, radial driven non-B machines
+* 09/04/13 RHA W56809 Correct Lower Turret start XTOOL
+* 09/04/13 RHA W56811 Correct Move to TC for non B axis machines
+* 09/04/13 RHA W55957 Correct feed after thread cycle
+* 10/04/13 RHA W56631 Parking, correct for sub spindle coordinates
+* 22/05/13 RHA W56631 Parking, correct for initial CPL variations, tidy declarations
+* 28/05/13 RHA W56631 Parking, Initial CPL (Spindle) now in system variables
+* Version 2014.1
+* 03/09/13 RHA W47884 Correct thread cycle approach move
+* 04/09/13 RHA W57656 Changes for standardised INDEXG200
+* 08/10/13 RHA W47884 Changes removed pending Edgecam fix with approach move
+* 09/10/13 RHA W56677 Implement new coolant controls
+* 10/10/13 RHA W60799 Tailstock quill extension value
+* Version 2014.2
+* 18/12/13 RHA W62161 Fix Synch Calls and stub procedures
+* 19/12/13 RHA W62161 Fix Synch numbering for 2 upper turrets
+* 07/01/14 RHA W62447 Fix duplicate tool list entries, #TAPEOUTPUT setting
+* 07/01/14 RHA W62161 Synch Calls from Move Steady
+* 22/01/14 RHA W61745 Make YZ arc code swap configurable (G200)
+* 06/02/14 RHA W58922 Implement CRC check in rapid moves
+* 26/03/14 RHA W56773 Correct Parking with intermediate B moves
+* 16/04/14 RHA W55407 Canned cycle profile gets feeds from finish cycle
+* 27/05/14 RHA W65095 Implement datum Shift in turning
+* Version 2015.1
+* 17/06/14 RHA W64644 Initialise position at Turret Unpark
+* 03/07/14 RHA W65474 Initialise position at Turn Datum Shift
+* 05/08/14 RHA W66005 Fix Sync Calls for turrets - Tailstock & Steady moves
+* 12/08/14 RHA W59462 Add angular precision setting
+* 01/10/14 RHA W42553 Correction for subroutines at end of NC file
+* Version 2015.2
+* 17/12/14 RHA W79600 Warn if thread canned cycle finishes at end
+* 18/12/14 RHA W80346 Separate set-up sheet for each turret
+* 18/12/14 RHA W47884 Simplify thread cycle approach and use system variables
+* 06/01/15 GST W66367 Separate common procedures for ToM and Turn
+* 20/01/15 RHA W66683 Use of STOP codes in Sub Spindle commands
+* 22/01/15 RHA W80786 Correct start end call switch for inactive turrets
+* 04/02/15 RHA W81327 Tidy declarations for G200
+* 11/02/15 RHA W79205 Avoid empty set-up sheets
+* 11/02/15 RHA W79953 Remove #FUNNY coordinate settings in turning cycles
+* 11/02/15 RHA W35019 Set STOP codes in all configurations
+* 12/02/15 RHA W79953 Fix Incremental coordinate settings in turning cycles
+* 17/02/15 RHA W79953 Fix more reversals
+* 18/02/15 RHA W79953 Force XZ at canned start/end blocks
+* 24/02/15 RHA W49417 Safe approach, fixed drill cycles
+* 25/02/15 RHA W81419 Allow for MACRO=268 for Docking
+* 03/03/15 RHA W79953 Force XZ at canned start/end on Lower Turret
+* 01/04/15 RHA W67046 Use ROT1DIR values
+* 01/04/15 RHA W61908 Correct direction for M code setting (Okuma)
+* 14/04/15 RHA W67046 Fix Use of ROT1DIR values
+* 23/04/15 RHA W67046 Force 0-360 range for sign=direction of angles
+* 28/04/15 RHA W67046 Force C in index for Rotary Rotate (Planar)
+* 28/04/15 RHA W83162 Provide default value (1) for #BREFDIAM
+* 30/04/15 RHA W81563 Allow for X offset in spindle selection
+* 05/05/15 RHA W83320 Correct #SPINSHIFT typo
+* Version 2016.1
+* 03/06/15 RHA W83489 Set #C-KEEP values in HOLD procedure, avoid refpt set if #MOVE=0
+* 03/06/15 RHA ECAM-657 Output Speeds in turned cycle profile
+* 04/06/15 RHA ECAM-695 Simplify C Index control in C_RAPID (#CWITHLINEAR)
+* 25/06/15 RHA ECAM-693 Correct #CFIRST setting to avoid reversed angles in hole approach
+* 30/06/15 RHA ECAM-1026 Correct for Y0 forced in template for rotary
+* 02/07/15 RHA ECAM-693 Fix remaining minor regressions
+* 02/07/15 RHA ECAM-693 Now it should do what was intended
+* 08/07/15 RHA ECAM-1841 Hole approach corrections for Fanuc Polar
+* 09/07/15 RHA ECAM-1582 Correct speed block output in canned cycle calls (Related to ECAM-657)
+* 14/07/15 RHA ECAM-1841 Hole approach corrections - Reverse Radial
+* 16/07/15 RHA ECAM-2241 Improve Initialisation and diagnostic after Fanuc Polar hole cycles
+* 21/07/15 RHA ECAM-1841 More hole approach corrections for Fanuc Polar
+* 28/07/15 RHA ECAM-2341 Implement angle at Tool Change
+* 27/08/15 RHA ECAM-2238 Correct unsigned depth - protect depth from Evaluate calls
+*
+******************************************************************************
+*
+*							*******************
+*                         Initialisation procedures
+*							********************
+*
+* Initialisation moved from individual start macros, based on Generic ISO.
+* Now called by all templates except the INDEXG200
+* Individual (different) requirements remain in start macros
+*  $PLANAR=NO
+* Set priority variables, workround for Code Gen problem DEV00009237
+* 5 axis IJK machining
+* Initialise spindle clamp
+*	Retrieve from MM & MT lines
+* Set Spindle flags
+* Set Tooling data
+* Number of tools on this turret
+* NUMTOOLS = Tools Actually Loaded
+* MAXTOOLS = Maximum permitted
+* Store Datum IDs in case output loop not called
+* Initialise sysid variables before running loop
+* So that loop will work again if run at end of program
+*
+* Turret park positions
+*  Note  #incrxyz is current abs/inc setting
+*        #incrxyzhold is main program setting
+*        #incrsubs is subroutine setting
+*PRECISION=#INCR-(#INCR/100)
+* Run-time questions ask once
+*******************************************************************************************
+*	Multiple Turrets
+*******************************************************************************************
+* #SPINDLECODE=1
+* Hold values #FUNNY trigger initialisation before first use
+* #CHUCKFACE1=#CHUCKFACE1OFF
+* #TURRETFACE1=#TURRETFACE1OFF
+* #THROUGHSPIN1=#THROUGHSPIN1OFF
+*  Merged Tape
+* Force PASS and TURRET for two turret merged tapes
+* Lower Turret tools
+* Reset PASS variable
+* Set Spindle and sub spindle work datum XZ positions
+* Main Spindle max speed from highest gear
+* Reset SPINDLE
+* B Axis Datum Shift
+**********************
+* STUB PROCEDURES
+**********************
+*********** Synch Stubs for 2 axis configurations
+* STUB
+* STUB
+* STUB
+* STUB
+***********
+**********************
+* Processing logic called by macro 3, Simple Turning Cycle
+*
+*	Canned cycle
+*
+* Retain #CHIP for compatibility
+* Processing logic called by macro 4, Rough Turn Area Clear
+*
+*
+*
+*
+*
+*
+*
+********** rough turn *********
+* New rough turn may end level with start point
+*
+*
+********** rough face *********
+* New rough turn may end level with start point
+*
+*
+* Adjust end block if block numbers output
+* %IF #MACRO=4 %THEN %CALL=CODECON_ROUGH-TURN:%GOTO @END
+* Macro 11 Rough profiling, calculate number of passes
+*
+*
+* Processing logic called by macro 5, Profiling Cycle
+*
+*
+*	Move to digitised start position if requested
+*
+*
+*
+*
+*
+********** turn *********
+*
+********** face *********
+* Adjust end block if block numbers output
+*
+*
+* Processing logic called by Macro 9, Hole Cycle
+*Initialise Z position at clearance - end of cycle
+* Processing logic called by Chipbreak Cycle
+*Initialise Z position at clearance - end of cycle
+* Processing logic called by Ream Cycle
+*Initialise Z position at clearance - end of cycle
+* Processing logic called by Bore Cycle
+*Initialise Z position at clearance - end of cycle
+* Processing logic called by macro 8, Tapping Cycle
+* Check peck tapping
+*
+*Initialise Z position at clearance - end of cycle
+* Processing logic called by macro 15, Toolchange
+*Set macro ID
+* Check Rapid to ToolChange
+* No Rapid_to_ToolChange call
+* Force CAXIS=0
+* #DIAM=#TURNDIAM*#XREVERSE
+* Set driven flag
+*Set plane
+* Coolant setting
+* Auto Coolant control
+*Manual Over-ride
+* %CALL=PT_COOL_CANCEL
+* Set Angle at Tool Change
+* Load all next tool parameters and reload current
+*
+*
+*
+*	Calculate Turret Index Direction hence MCode
+*
+* Feed Type
+*
+* CRC Register
+* Spindle Control
+*  Reset Toolchange positions
+*Reset HOLD values
+* Tool Change Call
+*	Hold Tool Gauge values for use in G92/G50 type machines
+*
+* Load next tool parameters and first tool
+* Reload current tool at the end
+* Always reload current tool before leaving
+*First
+*
+*
+* This procedure is no longer used by template logic
+* Processing logic called by macro 20, Constant_Surface_Speed
+* Check for FPM Conversion
+* Processing logic called by macro 29, Compensation==Off/Left/Right/Pathcomp
+* Conpensation is handled by the PT_OUTPUT_FEED and XZ_PLANE procedures
+* Lower Turret Driven
+* Axial only
+* Sub Spindle, driven
+* If Compensation factor is 0 then output comp codes imediately
+* Note that subfunct is not used in profiling if CRCFactor=0
+*
+* TURNING  X values in YSUB YINC YEND,  Z values in XSUB, XINC XEND  !!
+* First pass only - Initialise start point
+* First pass through translate is second call of subroutine.
+*
+* Incremental Subroutines
+* Absolute subroutines
+* #XMOVE=#XMOVE
+* #ZMOVE=#ZMOVE
+* prevent output of null effect G92 block
+*	Apply translation - G92 will reset registers
+*	Call Subroutine
+*	If Increment Subroutines by ... is not set then start at Progid & increment by one else use the increment.
+*Output approach move for first call, not translated calls
+*
+* Processing logic called by macro 40, Rapid to home
+*	Better to Externalise into procedure call called from RAPIDGCODE Token
+*
+*
+*
+*	Code Constructor called from procedure since loop used for output different strategies
+*
+*
+* Processing logic called by macro 41, Rapid to tool change
+*	Better to Externalise into procedure call called from RAPIDGCODE Token
+*
+*
+*
+*
+*
+* Reset ToolChange position for subsequent use
+*
+* Datum Shift
+* <Sysid [SYSID=13]>
+* Controls target point for Rapid to Tool Change
+* Sets #XFIXED etc and #TMP1/2/3 for processing according to options
+* Upper Turret
+* REFSHIFT=1 Datum not adjusted
+* REFSHIFT=0 Datum adjusted by Gauge Length
+* Set MOVE position via #TMP1 etc
+*
+*
+*
+*
+* <REFSHIFT 2>
+* <RAPID TO TOOLCHANGE Caxis=[CAXIS=13] Millmode=[MILLMODE=13]>
+* Set Fixed position to MOVE coords
+*
+*
+* <SHUFFLE2 BAXIS=[BAXIS=13]>
+*
+*
+* Align coordinates for axial on sub spindle
+* %IF MILLMODE=1 @END
+* #XFIXED=#XFIXED*-1
+* <TOOLCHANGE Caxis=[CAXIS=13] Millmode=[MILLMODE=13]  [XCPL=0][YCPL=1][ZCPL=2]>
+* Set Fixed position to XCPL etc
+* Turning, sub spindle
+*
+* Axial
+* <* Upper Turret Axial>
+* Radial
+* <Fixed [#XFIXED=0][#ZFIXED=2]>
+* Controls target point for Rapid to Home
+* Sets #XFIXED etc and #TMP1/2/3 for processing according to options
+* Upper Turret
+* REFSHIFT=1 Datum not adjusted
+* REFSHIFT=0 Datum adjusted by Gauge Length
+* Set MOVE position via #TMP1 etc
+*
+*
+*
+*
+* <REFSHIFT 2>
+* Set Fixed position to MOVE coords
+*
+*
+* <SHUFFLE2 BAXIS=[BAXIS=13]>
+*
+*
+* Align coordinates for axial on sub spindle
+* %IF MILLMODE=1 @END
+* #XFIXED=#XFIXED*-1
+*
+* Check result of NOMOTION for single quadrant arcs
+* Modified Feb05 - always check #move as 360 arc not possible in turning
+* %IF CIRCLE<>1 @OUTPUT
+*	If Increment Subroutines by ... is not set then start at Progid & increment by one else use the increment.
+*Output approach move for first call
+*#XMOVE=NEXTXMOVE
+*#ZMOVE=NEXTZMOVE
+* <[#XMOVE=10][#ZMOVE=10]>
+* that use of '=10' should have updated everything to the state at the end of the subroutine without any nc output
+* so that cyclesub_return will now succeed in actually outputting the field12 values:-
+*
+* %CALL=PT_OUTPUT_RAPID
+*
+*
+* %IF CAXIS=0 %THEN %CALL=PT_OUTPUT_RAPID %ELSE %CALL=C_RAPID
+*
+* Processing logic called by macro 61, Cyclesub
+* <Cyclsub start  [#XKEEP=0][#ZKEEP=2]>
+* Note that #XKEEP is diametral in canned cycle
+*  Block numbering, special cases
+********************************************************
+* Output position in CAM coordinates
+********************************************************
+* Set and call compensation if required. This is the same logic as used in CRC_HANDLER procedure
+* NB #COMPON may be uninitialised - same as #false
+* %IF #AUTOREG=1 %THEN #COMPDCODE1=POSITION+#MAXTOOLS %ELSE #COMPDCODE1=POSITION
+* #COMPDCODE=#FUNNY
+* Approach start of profile before cycle
+* Set up start block for cyclsub
+* Start outputing array
+* Approach start of profile inside cycle
+*	XY Point array used for linear and arc moves
+* Last block, special case block numbers
+* #PROF=#FUNNY
+* Cancel Cutter comp if turned on
+*******************************************************************
+*Macro 104, Code Generator instruction
+* Pressure
+* Set coolant taps
+*******************************************************************
+*******************************************************************
+* Check subfunct change
+* Check for changes & Blank unchanged values
+* Main Spindle
+* %IF #CHUCKFACE1HOLD=#CHUCKFACE1 %THEN #CHUCKFACE1=#FUNNY %ELSE #COOLCHANGE=#COOLCHANGE+1
+* %IF #THROUGHSPIN1HOLD=#THROUGHSPIN1 %THEN #THROUGHSPIN1=#FUNNY %ELSE #COOLCHANGE=#COOLCHANGE+1
+* Sub Spindle
+* %IF #CHUCKFACE2HOLD=#CHUCKFACE2 %THEN #CHUCKFACE2=#FUNNY %ELSE #COOLCHANGE=#COOLCHANGE+1
+* %IF #THROUGHSPIN2HOLD=#THROUGHSPIN2 %THEN #THROUGHSPIN2=#FUNNY %ELSE #COOLCHANGE=#COOLCHANGE+1
+* Upper Turret
+* %IF #TURRETFACE1HOLD=#TURRETFACE1 %THEN #TURRETFACE1=#FUNNY %ELSE #COOLCHANGE=#COOLCHANGE+1
+* Lower Turret
+* %IF #TURRETFACE2HOLD=#TURRETFACE2 %THEN #TURRETFACE2=#FUNNY %ELSE #COOLCHANGE=#COOLCHANGE+1
+*Save previous settings
+*******************************************************************
+* Coolant options
+* Subspindle
+* AUTOCOOL - Override Edgecam tap settings
+*******************************************************************
+* Check for ALL setting
+*<Spin1>
+*<Spin2>
+*<Turret 1>
+*<Turret 2>
+* Check Coolant tap settings
+*
+*<Individual>
+*<Spin1>
+*<Spin2>
+*<Turret 1>
+*<Turret 2>
+* Chuck Pressure
+* Second Spindle
+* Main Spindle
+* Processing logic called by macro 106, Exact Stop
+* Single shot, G code set in linear move
+* Mode setting
+*
+* Spindle Control
+* Direction <Direction= [DIRECTION=23]>
+* Set main Conditions
+*  <252 Main>
+*
+*<CSS= [CSS=23]>
+* Not CSS
+*
+* Check for FPM Conversion
+* Call code constructor if not a tool change
+* Set Coolant Taps and output for SPINDLE instruction
+* Bar Feed
+* Save existing feed and speed values
+* Set bar feed parameters
+*Approach - Use Rapid call(s)
+* %IF TURRET=1 %THEN #XMOVE=#XMOVE*#X2REVERSE
+*
+*Bar Feed
+*Re-instate feed and speed etc.
+* Turret Park
+* <Input vars>
+* <TOOL [XTOOL=0][YTOOL=1][ZTOOL=2] - Tool change turret centre wrt machine datum>
+* <Park [XPARK=0][YPARK=1][ZPARK=2] - Parking tool tip wrt machine datum>
+* <Move [XMOVE=0][YMOVE=1][ZMOVE=2] - Parking tool tip wrt current CPL>
+* <Turret Centre [XPARKCENTRE=0][YPARKCENTRE=1][ZPARKCENTRE=2]>
+* <Keep [#XKEEP=0][#YKEEP=1][#ZKEEP=2]>
+* < ** >
+* Token vars
+* #XPARK etc     - Park Position MC Coordinates
+* #XTURRETPK etc - Park Turret Datum
+* #XPARKINC etc  - Incremental - Toolchange to Park
+* Move to TC ordering, X First
+* Initialise position
+* Upper turret
+* initialise X positions at Tool Change for modality
+* Get this Toolchange coordinate
+* Set park position variables
+* Incremental vars
+*
+* Reset Keep values
+* Turret Un-Park
+*
+* Move to TC ordering
+*
+*
+*
+*
+*
+* Set move for Tool Change before Parking move
+* Upper main
+*
+*********************************
+*
+*  template defined macros 4xxx series
+*
+*********************************
+* Swarf Conveyor
+*
+*********************************
+*
+*  General processing procedures
+*
+*********************************
+* Handle User Input, Token PROGVERSION
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+* Handle User Input, Token PROGRAMMER
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+* Handle User Input, Token PROGDESCR
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+* Ask Only Once
+* Handle User Input, Token PROGID
+* Options - Always Ask (1), Ask if Not Set (2), Never Ask (3), Ask Only Once (4)
+*
+* Ask Only Once
+*
+*
+* Ask if not set #QUESTION=2
+*
+* Ask moved to procedure to handle multiple turrets
+* Better handling of ID question for multiple turrets
+* Processing upper1
+* 	      User explicitly specified index direction
+*         On first tool always index forward
+*         shortest will always be 1 less than 1/2 the number of tools in the turret
+*			Index Clw or Cclw depending upon the number of stations between current and next tools
+*
+*
+* Modified for adaptive templates to have a procedure for first leg
+* and a second procedure called by a token for the second leg
+*
+*	Handles Rapid to Home strategies e.g. Xfirst, Zfirst
+*	No automation depending on tool type i.e. User must program Xfirst
+*
+* Axis Fixed
+* FIELD 1 = 1 = X FIXED	(remain at current location	)
+* FIELD 3 = 1 = Z FIXED	(	"		"		"		)
+*
+* Axis Priority
+* FIELD 4 = 0 = None
+*			1 = XFIRST
+*           3 = ZFIRST
+* %IF #AUTOCOOL=1 %THEN %CALL=PT_COOL_CANCEL
+* Check for CRC in use
+* Set up #HOMEGCODE
+*
+*
+* < [FIELD1=0]  [FIELD3=0]  [FIELD4=0] >
+*	TMP1 & TMP2 are set as Home (Macro 40) or Toolchange (Macro 41) X&Z coords
+*	No method of knowing if U/W or X/Z Tokens being used
+*	Store X & Z moves to re-instate after processing move
+* Start of processing loop was here
+*
+*	Suppress non priority axis
+*	Suppress YZ first time round then supress X
+*	Suppress XZ first time round then supress X
+*	Suppress XY first time round then supress Z
+* Set Fixed positions
+*
+* Set ..STOREABS to ensure correct KEEP values
+* Set Coolant if automatic
+* Reset Coolant if automatic
+* Called via token to create second leg of move
+*	Suppress non priority axis
+*	Suppress X
+*	Suppress Y
+*	Suppress Z
+* Set Fixed positions
+*
+* INITialise tool tip relative to CPL
+*
+*
+*
+*							*******************
+*							CSS Values
+*							*******************
+*
+* Called from token
+* Set radius to current value
+*Check for change in status
+*CSS OFF
+*
+*							*******************
+*							Block No. Increment
+*							*******************
+*
+*
+* Check top limit, reset if exceeded
+*
+*
+*							******************************
+*							Safe Start Block No. Increment
+*							******************************
+*
+* If SBNUM includes position remove it after output.
+* Additional processing for rotary holes
+* Hole cycles only - set Keep vars in case initialised after Pseudo Polar output
+* No longer used in mainstream processing but retained for
+* No longer used in template logic
+*		XYZ moves to be incremental
+* No longer used in template logic
+*************************************************************************************
+*	Purpose	:	Calculate vector distance from current to next coordinate			*
+*				Use to determine if rapid move should be converted to feedrate move	*
+*************************************************************************************
+*	XZ distance
+* This procedure will break the cycle into a series of single passes.
+*%IF #TLOCOMP=#TRUE %THEN %CALL=PT_COMPENSATE_TLO
+*%IF #INCRXYZ=#TRUE %THEN %CALL=PT_INCREMENTAL_XYZ
+*<* DEPTH USED = [#DEPTH=0]>
+*%IF #TLOCOMP=#TRUE %THEN %CALL=PT_COMPENSATE_TLO
+*%IF #INCRXYZ=#TRUE %THEN %CALL=PT_INCREMENTAL_XYZ
+********************************************************
+* Output position in CAM coordinates
+********************************************************
+******************************************************** Last cycle block
+* Set Comp Off if needed
+*
+* #ENDSTYLE 0/1/2 No / Mv Start in Cycle / Mv Start after cycle
+* #CYCENDMOVE  - Clearance moves wanted
+* #CYCENDSKIP  - Not needed, already there
+* #TEMPENDMOVE - Setting for this cycle
+* Optional clearance move at the end of a turn cycle
+* Avoid LAST if Co-linear
+* <Turn>
+* <Face>
+* Suspend block number & CRC
+* Reset block number & CRC
+*
+*
+* Move to start within cycle blocks
+* Suspend block number again
+* <Output>
+********************************************************
+********************************************************
+********************************************************
+* Output position in CAM coordinates
+********************************************************
+* Normal block output
+*
+* #ENDSTYLE 0/1/2 No / Mv Start in Cycle / Mv Start after cycle
+* #CYCENDMOVE  - Clearance moves wanted
+* #CYCENDSKIP  - Not needed, already there
+* #TEMPENDMOVE - Setting for this cycle
+* Optional extra retract move at the end of a turn cycle
+* Suspend block number
+* Output last arc move
+* Reset block number & CRC
+*
+* Move to start within cycle blocks
+* Suspend block number again
+* Move Clear
+* Cyclesub finish at cycle start - called when FIELD12=1
+* Add move
+* Cyclesub reset to cycle start - called when #ENDSTYLE=0 (ignore)
+* #TOOLSHEET	1=Output with Main NC program	2=Output as seperate file	3=None
+* #TOOLSHEET2 0=Single setup sheet, 1=Sheet for each active turret
+*
+*
+*
+*
+*
+* Check move length for conversion before call to Evaluate
+*
+* Convert Rapid to Feed Move
+*
+*
+* Check for CRC in use
+*
+*
+* %IF #FEEDRAPIDS=1 @CONVERT_TO_FEED
+* %IF #RAPDIST=0 @MISS_CONVERT_TO_FEED
+* %CALL=PT_CALC_VECTOR_DISTANCE
+* %IF #TMP>#RAPDIST @MISS_CONVERT_TO_FEED
+*
+* @CONVERT_TO_FEED
+* Convert Rapid to Feed Move
+* #GCODE=DATA1(2)
+* #FEED=#RAPIDFEEDRATE
+* #CONVERTEDMOVE=1
+* #FEEDMODETEMP=#FEEDMODEGCODE
+* #FEEDMODEGCODE=DATA1(46)
+* %CALL=PT_CONTROL_FEEDTYPE
+* %CALL=CODECON_LINEAR-INTERPOLATION
+* #FEEDMODEGCODE=#FEEDMODETEMP
+* %GOTO @END
+*
+*******************************************************
+* Test if Threading
+*******************************************************
+* Threading
+* Single block threading G92
+* Longhand Threads
+*******************************************************
+* Normal move processing, Evaluate move characteristics
+*******************************************************
+*Set feed unless tapping
+*******************************************************
+* longhand threading
+*******************************************************
+* %IF #AUTOREG=1 %THEN #COMPDCODE1=POSITION+#MAXTOOLS %ELSE #COMPDCODE1=POSITION
+* #WarnCRC = 0  No warnings
+*            1  CRC Warn if Used only
+*            2  CRC warn if not 90 only
+*            3  Both above warnings
+* Check to warn if used
+* Check for arc move
+*************************************************************
+*	Purpose	:	To set number of moves in Lead out sequence	*
+*	Called	:	when processing a Feed or Arc move which is	*
+*				the first move of the Lead out sequence		*
+*				Subfunct=2									*
+*															*
+*************************************************************
+**************************************
+*	Lead Out permutations
+**************************************
+*	Angle + Rad 			= 1 move
+*	Length     				= 1 move
+*	Length + Angle 			= 1 move
+*	Length + Angle + Rad 	= 2 moves
+*	All plus one if 90 compensation cancel set i.e. Radius Compensation Factor in MM line
+*%IF FIELD5<>0 %THEN #LEADOUTCOUNT=#LEADOUTCOUNT+1
+*%IF FIELD6<>0 %THEN #LEADOUTCOUNT=#LEADOUTCOUNT+1
+* %IF #FEEDMODEGCODE=DATA1(47) %THEN #FEED=ZFEED/SPEED
+* %IF #FEEDMODEGCODE=DATA1(46) %THEN #FEED=ZFEED
+* #SPEED=SPEED
+* Feed to depth
+* Output Dwell if required
+* Change spindle direction and Return to Zclear
+* Put spindle direction back to selected direction
+*	Setvar^#ARCTYPE, determines the method of fixing arc centre
+*						Signed Start to Centre	1
+*						Signed Centre to start	2
+*						Unsigned Start / Centre	3
+*						Centre					4
+*	Setvar^#USERADS^Use Radius when possible
+*						TRUE / FALSE		Sets #OUTPUTRADS=#TRUE as default, re-assigned FALSE if I&J forced by logic e.g. 360 degrees move
+* #XMOVE=#XMOVE*#DIAM:#ZMOVE=#ZMOVE*#ZREVERSE
+* Default Start at current position
+* #XMOVE=#XHOLD
+* #ZMOVE=#ZHOLD
+* <TOOLTYPE=[TOOLTYPE=13]>
+* <FIELD5=[FIELD5=13]>
+* <XEND= [XEND=0] XSTART= [XSTART=0]>
+* Crossed centreline
+* <ZFirst>
+* <XFirst>
+* <Internal Bottom X then Z>
+* Safe complete
+* Digitised position
+* <Skip>
+*
+*
+* Set #SPEED & #RPM including recalculate for CSS condition
+* Used for all moves except array base thread mill and hole cycles
+*CSS Mode
+* Check for FPM Conversion
+*
+*
+* Calculate current spindle speed in RPM from Surface Speed
+*
+*
+* Not Tool Change
+*
+*
+* Set XZ offsets to constant parallel value if necessary
+*
+* reset tooling limits for merged NC
+*	Remove duplicate tools
+*Look ahead at ToolChange or Rapid
+* Setting
+* CX Interpolation
+*
+* Suppress spindle controls
+*
+* Only process if speed changed
+* %IF #MACRO=252 @CHECK
+* %IF #SPEED=#SPEEDHOLD @END
+* Check for running
+* Spindle Stop
+* Warn for feed moves only
+*
+* Set CSS code
+* Set speed variables
+* Trap zero speed
+*CSS is On Calculate RPM
+*<NUMGEARS [NUMGEARS=0]>
+* Get machine maximum speed from highest gear
+*
+* Check speed if RPM programmed or CSS check required
+* Even if speed unchanged, recheck for current spindle
+*
+* <MAXRPM=[MAXRPM=13]  #RPM=[#RPM=13]  Hold=[#RPMHOLD=13]>
+*
+* Check speed in range for spindle
+* Get details for first gear
+*
+* Check speed in range for spindle
+* Auto - Find gear
+*	Warn if Gear Range selected greater than defined in Spindle Tab
+* Check speed in range for gear
+* GEARMAXRPM,GEARMINRPM  limits for this gear on this spindle
+* Evaluate_move performs a number of operations sequentially on the coordinates
+* The start of each section is clearly marked.
+* Hold and nomotion checking grouped together.
+* Hold values are output coords with reverse and diametral adjustments
+* Keep values are machine coordinates adjusted for CPL variations
+****************************************
+* Adjust for CPL reversals, sub spindle related
+****************************************
+****************************************
+* Initialise  variables
+****************************************
+* Do not set for hole cycles
+****************************************
+* Set precision and #MOVE
+****************************************
+* <TEMPROUND=[#TEMPROUND=0]>
+* <TEMPROUND=[#TEMPROUND=0]>
+* <TEMPROUND=[#TEMPROUND=0]>
+****************************************
+* Set ref point flag
+****************************************
+****************************************
+* Process Incremental Coordinates
+****************************************
+****************************************
+* Incremental linear moves, use KEEP not HOLD values
+****************************************
+* Set KEEP values
+****************************************
+* Note #XKEEP and #XSTOREABS are diametral values when appropriate
+* #XCARTKEEP is a radial value
+* CHANGE 21/02/12
+*
+****************************************
+* Tool Length adjustment
+****************************************
+****************************************
+* Apply linear axis reversals etc
+****************************************
+* not unsigned
+****************************************
+* Set Feed, Speed, Feedtype
+****************************************
+****************************************
+* Debug and trace Output
+****************************************
+* Procedure trace is ON. Additional trace options
+* #TRTHREAD,#TRHOLE control array dumps in CY procedure
+* #TRX,#TRY,#TRZ,#TRC1,#TRC2,#TRB temporary output vars to protect modality
+* Note that diagnostic is context sensitive, shows CAM view of axis position
+* Not Drill or Thread Mill
+* Output End Points
+* Output position in machine coordinates
+* Output Current Mode Settings
+* Fixed tool hole cycle approach
+* Check static tool option flags, default same as CY
+* Rapid to start position, Clearance
+* Main Spindle
+* Sub Spindle
+* Z First for clearance
+* Rapid to Centre Line
+* #TMP=#GCODE:#GCODE=DATA1(1)
+*%IF #INCRXYZ=1 %THEN #ZMOVE=#ZMOVE-#ZHOLD
+*
+*Set RPLANE
+* Move to RPLANE if not already there (tapping)
+*%IF #INCRXYZ=1 %THEN #ZMOVE=#ZMOVE-#ZHOLD
+*
+* Now called from PMACRO-9 and PMACRO-10 for all static tool holes
+*
+*
+* Tapping only
+* Depth/Dwell mutual exclusivity removed, 0 values set to FUNNY
+*
+*
+*
+*
+* Set ZCLEAR incremental if required (840D)
+*
+*	Reverse the current spindle direction : called from Tapping when emulating a cycle
+* Main spindle static tool
+*
+* Call from token in auto mode
+* Set strategy and output
+* Call from macro
+* Check priority
+*
+* Force after tool change
+*
+* Force after ToolChange
+* <AfterTC>
+* #BRAKEFORCE1=1 Force After ToolChange
+* <HOMETC>
+* For for Rapid Home or ToolChange
+* #BRAKEFORCE2=1 Force For Move To ToolChange
+* Brake control modal
+* Force Brake control code
+* C axis status, set release if static tool, joint if driven
+*Driven
+* Driven spindle
+* Main Spindle
+* Sub Spindle
+* Main Spindle
+* Sub Spindle
+* #DRIVENTOOL is used as a processing flag with main spindle values
+* This procedure switches to sub spindle values for output. Reset after token use
+* Sub Spindle only
+* #AUTOTLO
+* 1= Maximum Tools + Turret Position
+* 2= Turret Position
+* 3= Position - Last 2 digits
+* 4= Position + Adjustment
+* 5= Zero
+* 6= Specified Rage - uses default and maximum
+* TLO in specified range
+* Tool Length Offset - Set by User
+* Not set, use default calculation
+* Last 2 digits #AUTOTLO=3
+* #AUTOTLO
+* 1= Maximum Tools + Turret Position
+* 2= Turret Position
+* 3= Position - Last 2 digits
+* 4= Position + Adjustment
+* 5= Zero
+* Tool Length Offset - Set by User
+* Not set, use default calculation
+* Last 2 digits #AUTOTLO=3
+*  < G10 L2 P0 X0 Z0 C0 Y0 A0 (True Datum)>
+* Initialise sysid variables before running loop
+* So that loop will work again if run at end of program
+* %IF PASS=1 %THEN TURRET=0 %ELSE TURRET=1
+*<Loop [#LOOP=0]>
+*<Call>
+* procedure written to calculate settiings of reversal flags and #DIAM modifier
+* Main Spindle
+*<XMODIFIER Main>
+* CAXIS=3, B axis moves
+* Main spindle B
+**************************************************
+* <* Set DIAM setting [FIVEAXIS=0]>
+* Static Tools
+* Driven Tools
+*
+* Polar milling (G12) override
+* Adjust for rotary at B180
+*
+*********************************************************
+*********************************************************
+* Called by token
+*********************************************************
+* Through Tool Coolant
+*********************************************************
+*********************************************************
+* CRC code reversals
+* %IF #SUBG2G3DRIVEN=0 @NO-SWAP
+*
+********************************************************************************
+* Sign reversals for driven tools on Lower Turret
+*Radial
+* Not in Drill cycle
+* Not in Drill cycle
+* Not in Drill cycle
+* Needs to be switchable - Lower Turret SS Driven Axial reverse
+*
+********************************************************************************
+*            CLAMP CONTROL
+********************************************************************************
+* Spindle clamping control for Daewoo
+* Note that there is also a spindle brake routine used by other machines.
+* <SET_SPINDLE_CLAMP Move [#MOVE=0]>
+* Check for priority first
+* Machining conditions, select strategy
+* <Turn>
+* <MillFeed Radial Rotary>
+* <MillFeed Radial Planar>
+* <MillFeed Axial Rotary>
+* <MillFeed Axial Planar>
+* <MillRapC>
+* <Drill>
+* <DrillRot>
+* Strategy 3
+* <ToolChange>
+* Spindle clamping actions
+* <High>
+* Set High
+* <Low>
+* Set Low
+* <Run>
+* Set clamp off - C movement
+*
+********************************************************************************
+*            Set macro name for Siemens
+********************************************************************************
+* Set ToolChange macro name for Siemens 840. Called by token
+* Cancel TLO if in use
+* Added for mazak to add adjustment when on sub spindle
+* Called by Attribute macro to reverse spindle when longhand tapping
+* Force Feedtype if required
+* Switches for Static (#FTYPETURN), Driven (#FTYPEMILL) and Driven tapping/threading (#FTYPETAP) tools
+* Unchanged, Force FPR, Force FPM
+* #THRDFLAG is set 0 at toolchange and 1 for tap cycle, 2 for threading cycle
+* Feed is not set here for macro 187 thread milling
+* Feed is not set here for sub-spindle movements
+* #FEEDMODEHOLD is now set when token is used
+* Set feed
+*
+* Turning moves and cycles
+* Static tools only
+* Converted Rapid move
+* Follow CAM type
+* CHANGE 10/11/10
+*
+* CHANGE 10/11/10
+*
+*
+*
+* FPM Wanted
+*
+*
+* FPR Wanted
+*
+*
+* Called by token from docking code constructors
+* Only calls dwell codecon if not zero dwell
+* Output trace end mark when called as secondary code constructor
+* Called from token, sets multipoint angle or code
+* Setvar^#MPTCODE^0^Multipoint Tooling^YESNO^Convert Angle to Code
+* Setvar^#MPTSTART^1^Multipoint Tooling^REAL^Code for angle 0
+* Setvar^#MPTCODEINC^3^Multipoint Tooling^REAL^Code Increment
+* Setvar^#MPTANGINC^6^Multipoint Tooling^REAL^Number of Codes
+* <PT_SET_MULTIPOINT  [MULTIPOINT]>
+* <ATCSPINANGLE [ATCSPINANGLE=13]>
+* %IF #MULTIPOINT>360 %THEN #MULTIPOINT=#MULTIPOINT-360
+*
+* <#TEMP=[#TEMP=13] #Mpt=[#MULTIPOINT=13]>
+* #MULTIPOINT=#MULTIPOINT*#TEMP
+* <Check Result [#MULTIPOINT=13]>
+* Check that cycle tap type matches tool tap type if set.
+* USERVAR3 set by cycle 1=Float, 2=Rigid
+* TAPTYPE set by Toolchange, 0=Unset, 1=Float, 2=Rigid
+*  %IF DWELL=0 %THEN DWELL=#FUNNY
+* TAPTYPE over-rules USERVAR3
+* Control processing of Attribute macro by SUBFUNCT value
+* If called by token from Turn_Cycle_Stop code constructor
+* If called by token from SYNCH code constructor
+* Calls Stop code constructor if needed
+*  #TEMPROUND - value being worked on
+*  #TEMPSIGN - holding variable for sign
+* general purpose routine to round a value within precision limit for positive and negative values
+* Round positive values
+* Round negative values
+*  #TEMPROUND - value being worked on
+*  #TEMPSIGN - holding variable for sign
+* general purpose routine to round a value within precision limit for positive and negative values
+* Angular values should not be subjected to linear precision, since the linear varies for inch and metric
+* Round positive values
+* Round negative values
+* Strip brackets from Tool description & comment
+*
+* procedure to strip ( ) from string
+*<Strip [#TMP=13] [$CHAR]>
+* Called by CHANGEOFFSET token - sets variables for related tokens
+* Rounds arc centre (IJK) values to required precision.
+* Now called for Turn and CY
+* Reversals of centre point
+* Sets VARI code, machining conditions for S840
+* Called by Token
+* Vari values <10 deemed unnecessary as chf/chr handled by Edgecam
+*
+* External back turn
+* Internal bore
+* Internal back turn
+* External turn
+* Internal back face
+* External face
+*Internal face
+* External back face
+* sets active flag on output for rapid checking
+* Depending on configuration, this procedure may be a stub
+* Trace output only used if procedure is active
+* Called IF #LTSTART=1 to supppress output on unused turret
+*
+****************************************************************************************************
+* Do not activate yet. Waiting investigation and fix for Macro look-ahead with more than 1 turret.
+****************************************************************************************************
+* Processing for End Macro
+* Processing for End Macro
+* Processing for Start macro
+*
+* %IF #TEMP>INSCOUNT @MASK
+*
+****************************************************************************************************
+* %LOADINS=INSNUM
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Procedures-basic-2.cgi
+*
+*********************************
+*
+* Created from turn-procedures-basic.cgi 06 January 2015
+* Placed under change control
+* Gabriel Stein
+*
+* File contains procedures for basic turn templates.
+* which are shared by Turn and ToM templates
+*
+*********************************
+*
+*  Macro related procedures
+*
+*********************************
+* Version 2015.2
+* 06/01/15 GST W66367 Separate common procedures for ToM and Turn
+* 13/01/15 GST W66367 Restructure - second batch
+* 19/01/15 GST W66367 Restructure - last batch
+* 29/01/15 RHA W47884 fix G76 regression X sign, lower turret
+* 04/02/15 RHA W47884 Correct I value, lower turret G76
+* Version 2016.1
+* 16/06/15 GST W83495 Allow thread turn on YZ plane
+* 25/05/15 GST ECAM-321 Fix pitch for threads in YZ plane
+*
+********************************************************************************
+* Processing logic called by macro 8, Threading Cycle
+* Longstop for unset variables
+*
+* <#NUMSTARTS=[#NUMSTARTS=13] #XSTART=[#XSTART=0]>
+*
+*
+*Set total depth and number of cuts
+*
+*
+*								Longhand would never visit here since %NOCYCLE
+*
+************************************************************
+* Single block threading
+*
+************************************************************
+* Full canned cycle
+* Number of starts = FIELD1
+* Lead = PITCH
+*
+*
+* <OK76>
+* <Check [#XSTART=0]>
+*
+*
+*
+* Move to next start point
+* #USER1=#XMOVE:<Check2 [#USER1=0]>
+*
+* #USER1=#XMOVE:<Move [#USER1=0]>
+* <Done>
+************************************************************
+* Processing logic called by macro 15, Toolchange
+* Set up the tool tip quadrant number used for tool store info.
+* Based on the GE1050 convention.
+* Based on the Fanuc/Siemens convention.
+* Output single block threading
+*	For G92 cycle, only output Cut pass
+* <#PASSCNT=[#PASSCNT=13] #NUMVECS=[#NUMVECS=13]>
+* Not Alternated
+* Alternate passes
+* Manage convert to high feed for thread return moves
+* Convert Rapid to Feed Move
+* #GCODE=DATA1(2)
+* #FEEDMODETEMP=#FEEDMODEGCODE
+* #FEEDMODEGCODE=DATA1(46)
+* #FEEDMODEGCODE=#FEEDMODETEMP
+* Calculate thread approach position, allowing for taper and XSAFE
+* Adjust for Z safe distance
+* #ZCYCLEAPP=#ZSTART+ZSAFE
+* %IF ZSTART<ZEND %THEN #ZCYCLEAPP=#ZSTART-ZSAFE
+* #XCYCLEAPP=XSTART
+* New Setting of Approach Position
+* Set #THRDINTFLG
+* NB TOOLTYPE = 0 (external) or 4 (internal)
+* If tool tip crosses centreline this setting is reversed.
+* Upper turret
+* Crossed centreline
+* Lower turret
+* Crossed centreline
+* <#Bearing =[#BEARING=13]>
+* External
+* Internal
+* %GOTO @END
+* W47884 might be able to remove following code - await test results
+*
+*   Calc distance from X point to xsafe
+*
+* <**** PB = [#PERPBRG=13]  CO = [#COBRG=13]  DIFF = [#BEARING=13] ****>
+* #COS=COS(#BEARING)
+* DEV00022626 Divide by zero error replace line
+* #TMP=ABS(#BEARING)
+* #TMP=ABS(#COS)
+* <#Bearing =[#BEARING=13] #COS=[#COS=13]>
+* %IF #TMP<#INCR %THEN #COLEN=XSAFE %ELSE #COLEN=XSAFE/#COS
+* <**** LN = [#COLEN=13] ****>
+*
+*   Calc X coord of high point
+*
+* #XTEMP=SIN(#BRG)
+* #XSAFE=#XTEMP*#COLEN
+* XSAFE=ABS(#XSAFE)
+*
+* #XCYCLEAPP=#XPOINT
+* %IF XSTART<0 %THEN #XCYCLEAPP=#XCYCLEAPP*-1
+* <Continue>
+* Adjust for X safe distance
+* <Continue  #XCYCLEAPP=[#XCYCLEAPP=0]>
+* %IF XEND<0 @BOTTOMSIDE
+* @TOPSIDE
+* <Topside XSTART=[XSTART=13] XSAFE=[XSAFE=13] XEND=[XEND=13] #THRDINTFLG=[#THRDINTFLG=13]>
+* Natural side of centreline for turret
+* %IF #THRDINTFLG=1 @INTERNAL1
+* <External>
+* #XCYCLEAPP=#XCYCLEAPP+XSAFE
+* %GOTO @END
+* @INTERNAL1
+* <Internal>
+* #XCYCLEAPP=#XCYCLEAPP-XSAFE
+* %GOTO @END
+* @BOTTOMSIDE
+* <Bottomside>
+* Other side of centreline from turret
+* Note internal/external tool types interchanged
+* %IF #THRDINTFLG=1 @INTERNAL2
+* <External>
+* #XCYCLEAPP=#XCYCLEAPP-XSAFE
+* %GOTO @END
+* @INTERNAL2
+* <Internal>
+* #XCYCLEAPP=#XCYCLEAPP+XSAFE
+* %GOTO @END
+* <End  #XCYCLEAPP=[#XCYCLEAPP=0]>
+*
+* Check
+*
+*
+*
+*    Calc number of moves in cycle
+*  #THREADING should only be #TRUE if we have consecutive THREAD commands
+*  Sets up I & K pitch tokens in case used. Fanuc uses PITCH
+* Calc Approach moves for Canned Cycles
+* X then Z or Z then X, as required
+* <Internal Bottom X then Z>
+* Safe complete
+*    Output Approach Move
+*<*** Thread start complete>
+* <F1= [FIELD1=0]>
+* <F6= [FIELD6=0]>
+*%DONT-OUTPUT=#FEED
+*************************************
+* Check approach angle against half angles in Fanuc permitted list
+*Set target depth
+*Upper Turret (0)
+*Lower Turret (1)
+*
+*
+*	*********************************************
+*	Procedures for performing calculations		*
+*	*********************************************
+*
+*
+*  Routine to reset MOVE and KEEP values after a Turning Tool Change
+*  Modified from PT_SET_TOOL_POS Jan 2010
+*
+* Set Precision
+*
+* Remove duplicate reversal
+*#XMOVE=#XMOVE*#XREVERSE
+* Output initial position
+* Check Spindle Priority when tapping or threading
+*<Spindle= [SPINDLE=0]   [SPINDLEID1=1]   [SPINDLEID2=1]>
+*<Turret [TURRET=0]>
+*<Priority Main [PRIORITYMAIN=0]   Sub [PRIORITYSUB=0]>
+*Main
+*Sub Spindle
+*
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Procedures-4CY.cgi
+*
+*********************************
+*
+***********************************************************************
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-4-Axis-ISO.cgi
+*
+*********************************
+*
+*
+*
+*
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Procedures-CYB.cgi
+*
+*********************************
+*Manual Over-ride
+* %CALL=PT_COOL_CANCEL
+* Set Angle at Tool Change
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Macros-CYB-ISO.cgi
+*
+*********************************
+*
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-Procedures-Sub-Spindle.cgi
+*
+*********************************
+*
+*
+*********************************
+*
+*  Code Wizard Templates
+*  File Turn-SubSpin-ISO.cgi
+*
+*********************************
+*
+**************************************************************************
+*   Machine independant Code Generator include file
+*
+*   Filename:	Whiteboard.cgi
+*	Author:		RHA
+*   Date:       09 December 2005
+*
+* New file for all adaptive template
+**************************************************************************
+*   Change History
+* Version 10.5
+*          FIRST ISSUE
+* 14/02/05 RHA DEV00016309 Fix long lines for codecon.txt
+* Version 12.5
+* 19/02/08 RHA DEV00022469 Add note prohibiting duplicate macros and procedures
+* Version 2009.2
+* 26/01/09 RHA DEV00025914 Add attribute_extension to macros and whiteboard
+* 27/01/09 RHA DEV00025914 Put new procedure in new code constructor - allows CGD compilation
+* 17/02/09 RHA DEV00025914 Prevent user deletion of new procedure
+* Version 2013.2
+* 29/11/12 RHA W54439 Make Customisation Whiteboard and PDI attribute user tokens green
+* Version 2014.2
+* 05/03/14 RHA W55288 Add Whiteboard_breakout Code Constructor
+* 13/03/14 RHA W55288 Add Default Sequence to breakout Code Constructor
+*
+**************************************************************************
+*	*****************************************
+*	*	Tab Name	:	Hackers Corner	*
+*	*****************************************
+*
+* Procedure for additional attribute function in connection with PDI customisation
+* Terminate the procedure defining the code_constructor
+* Dummy procedure for customised function
+* Example declaration
+* Dummy procedure for customised function
+* %ENDM for the last procedure is contained within the code_constructor
